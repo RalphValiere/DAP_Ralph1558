@@ -7,4 +7,4 @@ This is a temporary script file.
 x = 2
 print(x + 2)
 
-object()
+print("I am a inevitable")
