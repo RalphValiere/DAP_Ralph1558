@@ -107,9 +107,12 @@ my_first_dictionary['Pitit Desalin']
 
 import datetime
 
-mydate = datetime.datetime(2024, 3, 6)
+mydate = datetime.datetime(2024, 3, 6) 
 print(mydate)
 mydate.year
 mydate.month
 mydate.day
 mydate.minute
+
+mydatenow = datetime.datetime.now() - datetime.datetime(2024, 3, 6) 
+print(mydatenow)
