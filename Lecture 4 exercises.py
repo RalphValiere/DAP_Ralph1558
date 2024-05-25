@@ -114,7 +114,7 @@ ccc = {al:val for al, val in my_dictio.items()}
 ccc
 
 
-
+my_dictio.items()
 start_list = ['a', 'b', 'c', 'd', 'e']
 new_dict = {key.upper():None for key in start_list}
 print(new_dict)
