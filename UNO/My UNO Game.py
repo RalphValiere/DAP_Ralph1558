@@ -8,7 +8,7 @@ Created on Fri May 24 16:42:14 2024
 # This is the code for the last UNO version. UNO is a game owned by Mattel and
 # all rules, with some modifications, used in this script are coming from:
     # https://www.unorules.com/
-# The version we coded is inspired by the latest Classic UNO version.
+# The version I coded is inspired by the latest Classic UNO version.
 # But there exists more than a dozen of UNO version. Everytime you want 
 # to know what version is being played, please refer to the rules coded here...
 # UNO can be played with 2 and up to 10 players.
@@ -30,13 +30,15 @@ class MyUnoGame():
                       ' as 0.5 player or a integer in string format.')                              
         self.number_players = number_players        
         print('##\n Understood!\n Now, each player will enter their username\n',
-              'Look for the pop-up box that will appear on the screen\n',
-              'In case it does not appear automatically, check the IDE tab\n',
-              'as the pop-up box opened might be automatically minimized or hidden.\n')        
+              'Look for the pop-up box that will appear on the screen.\n',
+              'In case it does not appear automatically, check the IDE tab on the Taskbar or Dock,\n',
+              'as the pop-up box might be automatically minimized or hidden.\n',
+              'Check on your taksbar or Dock to see if the pop-up box has opened.\n')        
         input('Type anything after finishing reading this instruction, to start the process:')
         
         # Set up fo names or psuedo names for players        
         from tkinter import simpledialog
+        
             # I learned how to use this package thanks to ChatGPT.
             # This will allow me have input from players when they play their cards.
             # https://chatgpt.com/share/1305c4c4-3329-48c1-93ee-5b17d9bc39fd               
@@ -62,12 +64,57 @@ class MyUnoGame():
         
         self.rule_one = 'Next player hands is shown to you. But they reshufle 1 card.'
         self.rule_two = 'Player with least card pick 2 cards from Draw Pile (person playing this card excluded)'
-        self.rule_three = 'Everyone but you will get 2 more cards'
-    
-    def rules(self):
-        print(' ')
-        pass
-    
+        self.rule_three = 'Everyone but you will get 2 more cards'              
+        
+        wild_custom_choice = []
+        for num_player in range(1, self.number_players+1):
+            rule_options = ['Player ' + str(num_player),'\n',
+                            'Please select the rule number you want for the Wild Customizable Cards.\n',
+                            'Only insert the number of the rule you prefer.\n',
+                            'Do not enter anything else other than a single number.\n',
+                            'For example, if you want rule number 1, insert 1.\n\n',
+                            'Choose your prefered rule:\n\n',
+                            '1- ', self.rule_one, '\n',
+                            '2- ', self.rule_two, '\n',
+                            '3- ', self.rule_three]            
+            rule_choice = simpledialog.askstring("Pass", ''.join(rule_options))            
+            while rule_choice not in ['1', '2', '3']:
+                print('##\nError: You need to insert a number from 1 to 3.\n')
+                rule_choice = simpledialog.askstring("Pass", ''.join(rule_options))
+            rule_choice = int(rule_choice)
+            wild_custom_choice.append(rule_choice)
+        
+        import numpy as np
+        from numpy import random
+        # I have to say it's crazy that Python doesn't have a pre-built mode function
+        freq_one = sum(np.array(wild_custom_choice) == 1)
+        freq_two = sum(np.array(wild_custom_choice) == 2)
+        freq_three = sum(np.array(wild_custom_choice) == 3)
+        
+        if freq_one > freq_two and freq_one > freq_three:
+            wild_custom_rule = self.rule_one
+        elif  freq_two > freq_one and freq_two > freq_three:
+            wild_custom_rule = self.rule_two
+        elif freq_three > freq_one and freq_three > freq_two:
+            wild_custom_rule = self.rule_three
+        elif freq_one == freq_two and freq_one > freq_three:
+            wild_custom_rule = random.choice([self.rule_one, self.rule_two])
+        elif freq_one == freq_three and freq_one > freq_two:
+            wild_custom_rule = random.choice([self.rule_one, self.rule_three])
+        elif freq_two == freq_three and freq_two > freq_one:
+            wild_custom_rule = random.choice([self.rule_two, self.rule_three])
+        elif freq_one == freq_two and freq_one == freq_three:
+            wild_custom_rule = random.choice([self.rule_one, self.rule_two, self.rule_three])
+        
+        self.wild_custom_rule = wild_custom_rule
+        
+        print('\n AWESOME! You are all set now! You can start the game,\n',
+              'by calling the method .play(). You will need to provide game mode.\n',
+              'You can also change the max points to win the game. By default, it is 500 points.\n',
+              'Depending on the game mode, the max points will be irrelevant.\n',
+              'Please refer to the rules [using .rule()] to understand each game mode,\n',
+              'or any other rules of the game, before you start playing')
+   
     def cards(self):
         pass
     
@@ -77,19 +124,19 @@ class MyUnoGame():
     def draw_pile(self):
         pass
     
-    def set_max_points(max_points):
-        # To set the maximum points for a Player to win the game
-        pass
-    
-    def play(self):
-        pass
-    
     def discarded_pile(self):
         pass
+    
+    def play(self, game_mode, max_points=500):
+        pass
+    
+    def rules(self):
+        print(' ')
+        pass
 
 
-abc = MyUnoGame(2)
-
+abc = MyUnoGame(1)
+abc.wild_custom_rule == abc.rule_three
 
 
 player_names = {}
@@ -97,7 +144,15 @@ for num_player in range(1, 11):
     id_game = 'Player ' + str(num_player)
     print(id_game)
 
+x = [1, 2, 2]
 
+x[x == max(x)]
+
+import numpy as np
+x = np.array(x)
+x[x == max(x)]
+
+sum(x == 1)
 def ():    
     root = tk.Tk()
     root.withdraw()
