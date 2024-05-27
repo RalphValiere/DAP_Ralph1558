@@ -12,9 +12,15 @@ Created on Fri May 24 16:42:14 2024
 # But there exists more than a dozen of UNO version. Everytime you want 
 # to know what version is being played, please refer to the rules coded here...
 # UNO can be played with 2 and up to 10 players.
+# YOU WILL NEED INTERNET TO RUN THE GAME. SOME FEATURES REQUIRES A CONNECTION!
 # PLEASE! ENJOY!
 
 
+# >>> Start runnning code here
+pip install termcolor
+# I found this cool package which allows me to print text in color in the 
+# console. It needs to be run first, for the next codes to run.
+# You need Internet connection to run it!
 class MyUnoGame():
     def __init__(self, number_players, version='classic'):
         
@@ -67,8 +73,8 @@ class MyUnoGame():
         self.rule_three = 'Everyone but you will get 2 more cards'              
         
         wild_custom_choice = []
-        for num_player in range(1, self.number_players+1):
-            rule_options = ['Player ' + str(num_player),'\n',
+        for num in range(0, self.number_players):
+            rule_options = ['Player ' + str(num+1) + ': ' + list(self.player_names.values())[num] + '\n',                            
                             'Please select the rule number you want for the Wild Customizable Cards.\n',
                             'Only insert the number of the rule you prefer.\n',
                             'Do not enter anything else other than a single number.\n',
@@ -76,7 +82,7 @@ class MyUnoGame():
                             'Choose your prefered rule:\n\n',
                             '1- ', self.rule_one, '\n',
                             '2- ', self.rule_two, '\n',
-                            '3- ', self.rule_three]            
+                            '3- ', self.rule_three] 
             rule_choice = simpledialog.askstring("Pass", ''.join(rule_options))            
             while rule_choice not in ['1', '2', '3']:
                 print('##\nError: You need to insert a number from 1 to 3.\n')
@@ -108,17 +114,49 @@ class MyUnoGame():
         
         self.wild_custom_rule = wild_custom_rule
         
+        # Set up for all other cards
+        color_suit = ['red', 'yellow', 'green', 'blue']
+        action_nowild = ['Skip', 'Draw Two', 'Reverse']
+        ##
+        suit_zero = ['0-red', '0-yellow', '0-green', '0-blue']
+        suit_nonzero = [str(num)+'-'+col for num in range(1,10) for col in color_suit] * 2
+        suit_nowild = [action+'-'+col for action in action_nowild for col in color_suit] * 2
+        wild_cards = ['Wild Swap Hand',
+                     'Wild Shuffle Hands',
+                     'Wild Customizable', 'Wild Customizable', 'Wild Customizable',
+                     'Wild', 'Wild', 'Wild', 'Wild',
+                     'Wild Draw Four', 'Wild Draw Four', 'Wild Draw Four', 'Wild Draw Four']        
+        self.all_card_names = suit_zero + suit_nonzero + suit_nowild + wild_cards
+        assert len(self.all_card_names) == 113, 'The number of cards does not add up to 112.'
+                
         print('\n AWESOME! You are all set now! You can start the game,\n',
               'by calling the method .play(). You will need to provide game mode.\n',
               'You can also change the max points to win the game. By default, it is 500 points.\n',
               'Depending on the game mode, the max points will be irrelevant.\n',
+              'There are three game modes for this version of UNO.\n',
               'Please refer to the rules [using .rule()] to understand each game mode,\n',
-              'or any other rules of the game, before you start playing')
-   
-    def cards(self):
-        pass
+              'or any other rules of the game, before you start playing')        
     
-    def score_board(self):
+    def play(self, game_mode, max_points=500):        
+        while game_mode not in ['with_score', 'no_score', 'until_last']:
+            print(' ##\n',
+                  'Please select a game mode from this list:\n',
+                  '["with_score", "no_score", "until_last"]\n',
+                  'Please refer to the rules, using .rule(), to understand each game mode.\n')
+            game_mode = input('Choose your game mode: ')
+        self.game_mode = game_mode
+            
+        while type(max_points) != int or max_points < 1:
+            print(' ##\n',
+                  'Please enter a non-zero max points. Accept only integers.\n')
+            max_points = input(' Set the maximum points to win the game: ')
+            try:
+                max_points = int(max_points)
+            except ValueError:
+                print('\n##\n You can enter integers ONLY. Max points cannot be float/decimals')
+        self.max_points = max_points
+            
+        from termcolor import colored
         pass
     
     def draw_pile(self):
@@ -127,18 +165,57 @@ class MyUnoGame():
     def discarded_pile(self):
         pass
     
-    def play(self, game_mode, max_points=500):
+    def score_board(self):
         pass
+    
+    def all_game_features(self):        
+        self.features = ['List of attributes: \n',
+                         'number_players\n',
+                         'player_names\n',
+                         'rule_one\n',
+                         'rule_two\n',
+                         'rule_three\n',
+                         'wild_custom_rule\n',
+                         'all_card_names',
+                         'game_mode',
+                         'max_points',
+                         'features\n',
+                         '\nList of methods\n',
+                         'all_game_features\n',
+                         'score_board\n',
+                         'draw_pile\n',
+                         'discarded_pile\n',
+                         'play\n',
+                         'rules\n']
+        print('This is the list of attributes and methods you can call with an instance of this class:\n')
+        print(*self.features)
+    
     
     def rules(self):
         print(' ')
         pass
 
 
-abc = MyUnoGame(1)
-abc.wild_custom_rule == abc.rule_three
+x = [1, 2] + [4, 5]
 
+len(x)
 
+x.append(*[3, 4])
+
+str(0) + '-red'
+
+[1, 2] * 2
+
+print(colored('Manman', 'red'))
+
+abc = MyUnoGame(2)
+abc.play('no_score', max_points=0)
+
+type(abc.player_names.values())
+abc.player_names.values()
+list(abc.player_names.values())[0]
+
+'0-red' * 2
 player_names = {}
 for num_player in range(1, 11):
     id_game = 'Player ' + str(num_player)
@@ -257,7 +334,7 @@ print(' ### VERSION: CLASSIC\n',
 ' The first player to achieve 500 points wins the game.\n',
 ' ##\n',
 ' ## CARDS\n',
-' The game consists of 112 cards: 25 in each of four color suits (red, yellow, green, blue).\n',
+' This UNO game consists of 113 cards: 25 in each of four color suits (red, yellow, green, blue).\n',
 ' Each color suit has:\n',
 ' 	- One zero\n',
 ' 	- Two each of 1 through 9\n',
