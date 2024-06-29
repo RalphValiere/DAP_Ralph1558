@@ -13,7 +13,7 @@ Created on Fri May 24 16:42:14 2024
 # to know what version is being played, please refer to the rules coded here...
 # UNO can be played with 2 and up to 10 players.
 # YOU WILL NEED INTERNET TO RUN THE GAME. SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY!
+# PLEASE! ENJOY!!
 
 
 # >>> Start runnning code here
@@ -192,6 +192,25 @@ class MyUnoGame():
             print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_green'))
         else:
             print('\nThe first card is a: ', first_card[0], )
+        
+        self.discard.append('Skip-blue')
+
+        # Creating a function to put back the discarded cards into the pile, when there is less
+        # than 11 cards left in the pile...
+        
+        def reshuffle_discarded():
+            container_reshuffle = []
+            if len(self.pile) >= 11:
+                pass
+            elif len(self.pile) < 11:
+                print(f'\nThe pile has less than 10 cards left (only {len(self.pile)} left).\n'
+                      'The discarded cards will be reshuffled into the pile,'
+                      'except the last displayed card on th discarded pile.\n')
+                for position in range(len(self.discard)-1):
+                    container_reshuffle.append(self.discard[position])
+                    self.pile.append(self.discard[position])
+                for card in container_reshuffle:
+                    self.discard.pop(self.discard.index(card))
             
         # Creating a function that will ask players to set the color
         # when a wild card is played.
@@ -230,22 +249,22 @@ class MyUnoGame():
                 # We subset "played" to check the first letter in name card...
                 legality_message = 'Illegal Move'
             elif (((self.discard[-1].startswith('Skip') and self.discard[-1].endswith('-red')) and 
-                   (not played.endswith('-red') and not played.startswith('W'))) or 
+                   (not played.endswith('-red') and (not played.startswith('W') and not played.startswith('Skip')))) or 
                   ((self.discard[-1].startswith('Skip') and self.discard[-1].endswith('-blue')) and 
-                   (not played.endswith('-blue') and not played.startswith('W'))) or 
+                   (not played.endswith('-blue') and (not played.startswith('W') and not played.startswith('Skip')))) or 
                   ((self.discard[-1].startswith('Skip') and self.discard[-1].endswith('-green')) and 
-                   (not played.endswith('-green') and not played.startswith('W'))) or 
+                   (not played.endswith('-green') and (not played.startswith('W') and not played.startswith('Skip')))) or 
                   ((self.discard[-1].startswith('Skip') and self.discard[-1].endswith('-yellow')) and 
-                    (not played.endswith('-yellow') and not played.startswith('W')))):                
+                    (not played.endswith('-yellow') and (not played.startswith('W') and not played.startswith('Skip'))))):                
                 legality_message = 'Illegal Move'
             elif (((self.discard[-1].startswith('Reverse') and self.discard[-1].endswith('-red')) and 
-                   (not played.endswith('-red') and not played.startswith('W'))) or 
+                   (not played.endswith('-red') and (not played.startswith('W') and not played.startswith('Reverse')))) or 
                   ((self.discard[-1].startswith('Reverse') and self.discard[-1].endswith('-blue')) and 
-                   (not played.endswith('-blue') and not played.startswith('W'))) or 
+                   (not played.endswith('-blue') and (not played.startswith('W') and not played.startswith('Reverse')))) or 
                   ((self.discard[-1].startswith('Reverse') and self.discard[-1].endswith('-green')) and 
-                   (not played.endswith('-green') and not played.startswith('W'))) or 
+                   (not played.endswith('-green') and (not played.startswith('W') and not played.startswith('Reverse')))) or 
                   ((self.discard[-1].startswith('Reverse') and self.discard[-1].endswith('-yellow')) and 
-                    (not played.endswith('-yellow') and not played.startswith('W')))):
+                    (not played.endswith('-yellow') and (not played.startswith('W') and not played.startswith('Reverse'))))):
                 legality_message = 'Illegal Move'
             elif ((self.discard[-1].startswith('W') and WILD_COLOR == '-blue') and
                   not played.endswith('-blue')):
@@ -277,93 +296,150 @@ class MyUnoGame():
         
         # Now, Players plays until end of game
         quantity_players = self.number_players
-        while all(len(hand) != 0 for hand in players_cards.values()):            
-            number_players_left = 0
-            player_who_left = []
-            for num in range(0, quantity_players):
-                # Initializing player's turn
-                displayed_hand = []
-                number_card = len(list(players_cards.values())[num])
-                number_options = []
-                for position in range(0, number_card):
-                    card_face = list(players_cards.values())[num][position]
-                    card_list = ''.join([str(position+1), ') ',
-                                         str(card_face), '\n'])
-                    displayed_hand.append(card_list)
-                    number_options.append(str(position+1))                    
-                displayed_hand = ''.join(displayed_hand)
-                number_options.append('888')
-                number_options.append('999')
-                options_message = ['Player ', str(num+1), ':', list(players_cards.keys())[num], '\n',
-                                  'Your turn!\n', 'Please choose the card you want to play.\n',
-                                  'Here is your hand: \n\n',
-                                  displayed_hand,
-                                  str(888), ') Pass (or Draw cards if required)\n',
-                                  str(999), ') Concede the game']                
-                WILD_COLOR = '' # Initializing color for Wild cards
-                
-                # Create a function to run validity and legality test when card is
-                # played by players
-                
-                def test_validity():
-                    validity_condition = False # Condition for validity of option chosen
-                    legality_condition = False # Condition for legality of option chosen
-                    while not (legality_condition and validity_condition):
-                        option_chosen = simpledialog.askstring("Pass", ''.join(options_message))
-                        legality_result = ''
-                        try:
-                                   if option_chosen == '888' or option_chosen == '999':
-                                       card_face_played = []
-                                       legality_result = 'Legal Move'
-                                   else:
-                                       card_face_played = list(players_cards.values())[num][int(option_chosen)-1]
-                                       legality_result = ismove_legal(card_face_played)
-                        except IndexError:
-                            print('##\nError: You need to insert a number from the list available.\n')
-                        if option_chosen not in number_options and legality_result != 'Legal Move':
-                            validity_condition = False
-                            legality_condition = False
-                        elif option_chosen in number_options and legality_result != 'Legal Move':
-                            validity_condition = True
-                            legality_condition = False
-                            print('##\nIllegal Move: Choose another card. Refer to rules to see legal moves.\n')
-                        elif option_chosen not in number_options and legality_result == 'Legal Move':
-                            validity_condition = False
-                            legality_condition = True                            
-                        elif option_chosen in number_options and legality_result == 'Legal Move':
-                            validity_condition = True
-                            legality_condition = True
-                    return option_chosen
-                
-                
-                # Analyzing first discarded card and determining action for player
-                if self.discard[-1][0].isdigit():
-                    option_chosen = test_validity()
-                    if option_chosen == '888':
-                        get_two_card = list(random.sample(self.pile, 2))
-                        players_cards[list(players_cards.keys())[num]].append(get_two_card[0])
-                        players_cards[list(players_cards.keys())[num]].append(get_two_card[1])
-                        self.pile.pop(self.pile.index(get_two_card[0]))
-                        self.pile.pop(self.pile.index(get_two_card[1]))
-                    elif option_chosen == '999':
+        skip_next_player = True
+        while all(len(hand) != 0 for hand in players_cards.values()):
+            while quantity_players > 1:
+                self.number_players_left = 0
+                player_who_left = []
+                for num in range(0, quantity_players):
+                    # Initializing player's turn
+                    displayed_hand = []
+                    number_card = len(list(players_cards.values())[num])
+                    number_options = []
+                    for position in range(0, number_card):
+                        card_face = list(players_cards.values())[num][position]
+                        card_list = ''.join([str(position+1), ') ',
+                                             str(card_face), '\n'])
+                        displayed_hand.append(card_list)
+                        number_options.append(str(position+1))                    
+                    displayed_hand = ''.join(displayed_hand)
+                    number_options.append('888')
+                    number_options.append('999')
+                    options_message = [list(players_cards.keys())[num].upper(), '\n',
+                                      'Your turn!\n', 'Please choose the card you want to play.\n',
+                                      'Here is your hand: \n\n',
+                                      displayed_hand,
+                                      str(888), ') Pass (or Draw cards if required)\n',
+                                      str(999), ') Concede the game']                
+                    WILD_COLOR = '' # Initializing color for Wild cards
+                    
+                    # Create a function to run validity and legality test when card is
+                    # played by players
+                    
+                    def test_validity():
+                        validity_condition = False # Condition for validity of option chosen
+                        legality_condition = False # Condition for legality of option chosen
+                        while not (legality_condition and validity_condition):
+                            option_chosen = simpledialog.askstring("Pass", ''.join(options_message))
+                            legality_result = ''
+                            try:
+                                       if option_chosen == '888' or option_chosen == '999':
+                                           card_face_played = []
+                                           legality_result = 'Legal Move'
+                                       else:
+                                           card_face_played = list(players_cards.values())[num][int(option_chosen)-1]
+                                           legality_result = ismove_legal(card_face_played)
+                            except IndexError:
+                                print('##\nError: You need to insert a number from the list available.\n')
+                            if option_chosen not in number_options and legality_result != 'Legal Move':
+                                validity_condition = False
+                                legality_condition = False
+                            elif option_chosen in number_options and legality_result != 'Legal Move':
+                                validity_condition = True
+                                legality_condition = False
+                                print('##\nIllegal Move: Choose another card. Refer to rules to see legal moves.\n')
+                            elif option_chosen not in number_options and legality_result == 'Legal Move':
+                                validity_condition = False
+                                legality_condition = True                            
+                            elif option_chosen in number_options and legality_result == 'Legal Move':
+                                validity_condition = True
+                                legality_condition = True
+                        return option_chosen
+                    
+                    # Creating a function to analyze action when 1 or more players abandon the game
+                    
+                    def player_quit():
                         if quantity_players > 2:
                             player_who_left.append(list(players_cards.keys())[num])
-                            number_players_left += 1
+                            self.number_players_left += 1
                         elif quantity_players < 3:
                             del players_cards[list(players_cards.keys())[num]]
                             print('\n', '#######', list(players_cards.keys())[0], 'has won the game. #######\n')
-                            input('Type anything to exit the system: ')
+                            input('Type anything to exit the game: ')
+                            print(' ')
                             import sys
                             sys.exit()
-            quantity_players += number_players_left
-            if number_players_left == 0:
-                pass
-            elif number_players_left > 0:
-                [self.pile.append(cards) for left in player_who_left for cards in players_cards[left]]
-                for left in player_who_left:
-                    del players_cards[left]
                     
-                    #### YOU NEED TO FIX THIS!!!
+                    # Creating a function to trigger the action- play a card
+                    
+                    def play_acard():
+                        card_played = list(players_cards.values())[num][int(option_chosen)-1]
+                        index_card = players_cards[list(players_cards.keys())[num]].index(card_played)
+                        players_cards[list(players_cards.keys())[num]].pop(index_card)
+                        self.discard.append(card_played)
+                        print('\nPlayer', list(players_cards.keys())[num].upper(), 'has played: ', card_played)
+                        if self.discard[-1].endswith('-red'):
+                            print('\nThe new displayed card is ', colored(self.discard[-1], 'black', on_color='on_red'))
+                        elif self.discard[-1].endswith('-yellow'):
+                            print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_magenta'))
+                        elif self.discard[-1].endswith('-blue'):
+                            print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_cyan'))
+                        elif self.discard[-1].endswith('-green'):
+                            print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_green'))
+                        else:
+                            print('\nThe new displayed is a: ', self.discard[-1])
+                            
+                    # Analyzing displayed discarded card and determining action for player
+                    ## When there is a Draw Two displayed
+                    if self.discard[-1].startswith('Draw Two'):
+                        option_chosen = test_validity()
+                        if option_chosen == '888':
+                            reshuffle_discarded()
+                            get_two_cards = list(random.sample(self.pile, 2))
+                            players_cards[list(players_cards.keys())[num]].append(get_two_cards[0])
+                            players_cards[list(players_cards.keys())[num]].append(get_two_cards[1])
+                            self.pile.pop(self.pile.index(get_two_cards[0]))
+                            self.pile.pop(self.pile.index(get_two_cards[1]))
+                            print('/nPlayer', list(players_cards.keys())[num].upper(), 'has picked two more cards')
+                        elif option_chosen == '999':
+                            player_quit()
+                            
+                    ## When there is a Skip displayed
+                    elif self.discard[-1].startswith('Skip'):
+                        if skip_next_player == True:
+                            skip_next_player = False
+                            print('\nPlayer', list(players_cards.keys())[num].upper(), 'has been skipped.')
+                            continue
+                        elif skip_next_player == False:
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                            elif option_chosen == '999':
+                                player_quit()
+                            else:
+                                skip_next_player = True
+                                play_acard()
+                                
+                # Compiling iteration and actions and reset turns
+                                
+                quantity_players -= self.number_players_left
+                if self.number_players_left == 0:
+                    pass
+                elif self.number_players_left > 0:
+                    if quantity_players == 1:
+                        for left in player_who_left:
+                            del players_cards[left]
+                        print('\n', '#######', list(players_cards.keys())[0], 'has won the game. #######\n')
+                        input('Type anything to exit the system: ')
+                        import sys
+                        sys.exit()
+                    elif quantity_players > 1:
+                        [self.pile.append(cards) for left in player_who_left for cards in players_cards[left]]
+                        for left in player_who_left:
+                            del players_cards[left]
                             
                 # Validating Card choice
                 
@@ -414,6 +490,34 @@ abc = MyUnoGame(3)
 abc.play('with_score', max_points=500)
 len(abc.pile)
 
+upper('sa')
+
+#########
+x = [1, 2, 3, 4, 5, 6, 7]
+print(f'length of x is {len(x)}')
+w = []
+w.append(x[0])
+
+for i in range(len(x)-1):
+    w.append(x[i])
+
+for a in w:
+    x.pop(x.index(a))
+#######
+
+y = {'a':[1, 2], 'b':[4, 6], 'c':[9, 7]}
+y['b'].pop(y['b'].index(6))
+
+
+test = True
+test
+not test
+
+test = False
+
+if test == False:
+    print('ajsa')
+
 import random
 y = list(random.sample(x, 2))
 type(random.sample(x, 2))
@@ -428,7 +532,7 @@ def test():
     return x
 print(test())
 x = test()
-x = [1, 2, 3, 4, 5, 6, 7]
+
 
 y = [[1, 2], [3, 6]]
 [a-1 for a in x for x in y]
