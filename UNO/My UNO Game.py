@@ -13,7 +13,7 @@ Created on Fri May 24 16:42:14 2024
 # to know what version is being played, please refer to the rules coded here...
 # UNO can be played with 2 and up to 10 players.
 # YOU WILL NEED INTERNET TO RUN THE GAME. SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY!!
+# PLEASE! ENJOY!
 
 
 # >>> Start runnning code here
@@ -193,6 +193,12 @@ class MyUnoGame():
         else:
             print('\nThe first card is a: ', first_card[0], )
         
+        first_card[0] = 'Wild'
+        if first_card[0] in ['Wild Swap Hand', 'Wild Shuffle Hands',
+                             'Wild Customizable', 'Wild']:
+            first_is_wild = True # Initializing condition showing if first card displayed is a wild card"
+        else:
+            first_is_wild = False # Initializing condition showing if first card displayed is a wild card"
         self.discard.append('Wild')
 
         # Creating a function to put back the discarded cards into the pile, when there is less
@@ -218,23 +224,47 @@ class MyUnoGame():
         def set_wild_color(wild):
             if wild in ['Wild Swap Hand', 'Wild Shuffle Hands', 'Wild Customizable',
              'Wild', 'Wild Draw Four']:
-                wild_color_message = ['Please choose a color to continue the game: \n\n',
-                                      '1-blue\n', '2-green\n', '3-red\n', '4-yellow\n']
+                wild_color_message = ['Player ' + list(self.player_names.values())[num].upper() + '\n',
+                                      'Please select a color for the wild card you just played.\n',
+                                      'Do not enter anything else other than a single number.\n',
+                                      'For example, if you want the color option 1, insert 1, not the color.\n\n',
+                                      'Choose your prefered color for the game to continue:\n\n',
+                                      '1- red\n',
+                                      '2- blue\n',
+                                      '3- green\n',
+                                      '4- yellow']                                  
                 wild_color_chosen = simpledialog.askstring("Pass", ''.join(wild_color_message))
                 while wild_color_chosen not in ['1', '2', '3', '4']:
                     print('##\nError: You need to insert a number from the list available.\n')
                     wild_color_chosen = simpledialog.askstring("Pass", ''.join(wild_color_message))
                 if wild_color_chosen == '1':
-                    color_set = '-blue'
-                elif wild_color_chosen == '2':
-                    color_set = '-green'
-                elif wild_color_chosen == '3':
                     color_set = '-red'
+                elif wild_color_chosen == '2':
+                    color_set = '-blue'
+                elif wild_color_chosen == '3':
+                    color_set = '-green'
                 elif wild_color_chosen == '4':
                     color_set = '-yellow'
             else:
                 print('##\nThere might a big bug in the game.\n')
                 color_set = 'No color - Game bug'
+                
+            if color_set == '-red':
+                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
+                      colored(color_set.upper(), 'black', on_color='on_red'))
+            elif color_set == '-blue':
+                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
+                      colored(color_set.upper(), 'black', on_color='on_cyan'))
+            elif color_set == '-green':
+                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
+                      colored(color_set.upper(), 'black', on_color='on_green'))
+            elif color_set == '-yellow':
+                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
+                      colored(color_set.upper(), 'black', on_color='on_magenta'))
+            elif color_set == 'No color - Game bug':
+                print('\nThere is bug in the game! Game will exit! Developers will fix it!')
+                import sys
+                sys.exit()
             return color_set
         
         # Crating a function that analyze card value and determine all possible
@@ -269,16 +299,16 @@ class MyUnoGame():
                     (not played.endswith('-yellow') and (not played.startswith('W') and not played.startswith('Reverse'))))):
                 legality_message = 'Illegal Move'
             elif ((self.discard[-1].startswith('W') and self.wild_color == '-red') and
-                  not played.endswith('-red')):
+                  (not played.endswith('-red') and not played.startswith('W'))):
                 legality_message = 'Illegal Move'
             elif ((self.discard[-1].startswith('W') and self.wild_color == '-blue') and
-                  not played.endswith('-blue')):
+                  (not played.endswith('-blue') and not played.startswith('W'))):
                 legality_message = 'Illegal Move'
             elif ((self.discard[-1].startswith('W') and self.wild_color == '-green') and
-                  not played.endswith('-green')):
+                  (not played.endswith('-green') and not played.startswith('W'))):
                 legality_message = 'Illegal Move'
             elif ((self.discard[-1].startswith('W') and self.wild_color == '-yellow') and
-                  not played.endswith('-yellow')):
+                  (not played.endswith('-yellow') and not played.startswith('W'))):
                 legality_message = 'Illegal Move'
             elif ((self.discard[-1].endswith('-red') and not played.endswith('-red') or
                    self.discard[-1].endswith('-blue') and not played.endswith('-blue') or
@@ -299,7 +329,8 @@ class MyUnoGame():
         skip_next_player = True
         draw_two_skip = True
         draw_four_skip = True
-        first_is_wild = True
+        self.wild_color = '' # Initializing color for Wild cards
+        self.show_card = '' # Initializing the command to show a player's card
         while all(len(hand) != 0 for hand in players_cards.values()):
             while quantity_players > 1:
                 self.number_players_left = 0
@@ -323,21 +354,19 @@ class MyUnoGame():
                                       'Your turn!\n', 'Please choose the card you want to play.\n',
                                       'Here is your hand: \n\n',
                                       displayed_hand,
-                                      str(888), ') Pass (or Draw cards if required)\n',
-                                      str(999), ') Concede the game']
+                                      '888) Pass (or Draw cards if required)\n',
+                                      '999) Concede the game']
                     draw_two_message = [list(players_cards.keys())[num].upper(), '\n',
                                       'A Draw Two card has been played! You can draw two cards or\n',
                                       'quit the game: \n\n',
-                                      str(888), ') Pass (or Draw cards if required)\n',
-                                      str(999), ') Concede the game']
+                                      '888) Pass (or Draw cards if required)\n',
+                                      '999) Concede the game']
                     wild_four_message = [list(players_cards.keys())[num].upper(), '\n',
                                       'A Wild Draw Four card has been played! You can draw four cards or\n',
                                       'challenge (refer to rules for challenge) or quit the game: \n\n',
-                                      str(888), ') Pass (or Draw cards if required)\n',
-                                      str(999), ') Concede the game',
-                                      str(000), ') Challenge the Wild Draw Four']
-                    self.wild_color = '' # Initializing color for Wild cards
-                    self.show_card = '' # Initializing the command to show a player's card
+                                      '888) Pass (or Draw cards if required)\n',
+                                      '999) Concede the game\n',
+                                      '000) Challenge the Wild Draw Four']
                     
                     # Create a function to run validity and legality test when card is
                     # played by players
@@ -460,79 +489,47 @@ class MyUnoGame():
                         players_cards[list(players_cards.keys())[num]].pop(index_card)
                         self.discard.append(card_played)
                         if card_played.startswith('W'):
-                            color_message = ['Player ' + list(self.player_names.values())[num].upper() + '\n',
-                                              'Please select a color for the wild card you just played.\n',
-                                              'Do not enter anything else other than a single number.\n',
-                                              'For example, if you want the color option 1, insert 1, not the color.\n\n',
-                                              'Choose your prefered color for the game to continue:\n\n',
-                                              '1- red\n',
-                                              '2- blue\n',
-                                              '3- green\n',
-                                              '4- yellow']
-                            color_choice = simpledialog.askstring("Pass", ''.join(color_message))
-                            while color_choice not in ['1', '2', '3', '4']:
-                                print('##\nError: You need to insert a number from 1 to 4.\n')
-                                color_choice = simpledialog.askstring("Pass", ''.join(color_message))
-                            color_choice = int( color_choice)
-                            if color_choice == 1:
-                                self.wild_color = '-red'
-                            elif color_choice == 2:
-                                self.wild_color = '-blue'
-                            elif color_choice == 3:
-                                self.wild_color = '-green'
-                            elif color_choice == 4:
-                                self.wild_color = '-yellow'
-                        else:
-                            pass                            
-                        print('\nPlayer', list(players_cards.keys())[num].upper(), 'has played: ', card_played)
-                        if self.discard[-1].endswith('-red'):
-                            print('\nThe new displayed card is ', colored(self.discard[-1], 'black', on_color='on_red'))
-                        elif self.discard[-1].endswith('-yellow'):
-                            print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_magenta'))
-                        elif self.discard[-1].endswith('-blue'):
-                            print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_cyan'))
-                        elif self.discard[-1].endswith('-green'):
-                            print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_green'))
-                        else:
+                            self.wild_color = set_wild_color(card_played)
+                            print('\nPlayer', list(players_cards.keys())[num].upper(), 'has played: ', card_played)
                             print('\nThe new displayed card is a: ', self.discard[-1])
-                            if self.wild_color == '-red':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_red'))
-                            elif self.wild_color == '-blue':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_cyan'))
-                            elif self.wild_color == '-green':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_green'))
-                            elif self.wild_color == '-yellow':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_magenta'))
+                        else:
+                            print('\nPlayer', list(players_cards.keys())[num].upper(), 'has played: ', card_played)
+                            if self.discard[-1].endswith('-red'):
+                                print('\nThe new displayed card is ', colored(self.discard[-1], 'black', on_color='on_red'))
+                            elif self.discard[-1].endswith('-yellow'):
+                                print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_magenta'))
+                            elif self.discard[-1].endswith('-blue'):
+                                print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_cyan'))
+                            elif self.discard[-1].endswith('-green'):
+                                print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_green'))
+                            else:
+                                print('\nThe new displayed card is a: ', self.discard[-1])
                     
                     # Creating a function that displayed previous or next player's card
                     
                     def show_player_card():
                         if self.show_card == 'Next':
                             if num == quantity_players - 1:
-                                print('Player ', list(players_cards.keys())[0], 'cards will be displayed.\n')
-                                print('\n', list(players_cards.keys())[0], 'hand is: ')
+                                print('Player ', list(players_cards.keys())[0].upper(), 'cards will be displayed.\n')
+                                print(list(players_cards.keys())[0].upper(), 'hand is: ')
                                 print(list(players_cards.values())[0])
                                 self.show_card = ''
                                 pass
                             else:
-                                print('Player ', list(players_cards.keys())[num+1], 'cards will be displayed.\n')
-                                print('\n', list(players_cards.keys())[num+1], 'hand is: ')
+                                print('Player ', list(players_cards.keys())[num+1].upper(), 'cards will be displayed.\n')
+                                print(list(players_cards.keys())[num+1].upper(), 'hand is: ')
                                 print(list(players_cards.values())[num+1])
                                 self.show_card = ''
                         elif self.show_card == 'Prev':
                             if num == 0:
-                                print('Player ', list(players_cards.keys())[quantity_players - 1], 'cards will be displayed.\n')
-                                print('\n', list(players_cards.keys())[quantity_players - 1], 'hand is: ')
+                                print('Player ', list(players_cards.keys())[quantity_players - 1].upper(), 'cards will be displayed.\n')
+                                print(list(players_cards.keys())[quantity_players - 1].upper(), 'hand is: ')
                                 print(list(players_cards.values())[quantity_players - 1])
                                 self.show_card = ''
                                 pass
                             else:
-                                print('Player ', list(players_cards.keys())[num-1], 'cards will be displayed.\n')
-                                print('\n', list(players_cards.keys())[num-1], 'hand is: ')
+                                print('Player ', list(players_cards.keys())[num-1].upper(), 'cards will be displayed.\n')
+                                print(list(players_cards.keys())[num-1].upper(), 'hand is: ')
                                 print(list(players_cards.values())[num-1])
                                 self.show_card = '' 
                             
@@ -591,41 +588,7 @@ class MyUnoGame():
                     ## When there is a Wild displayed
                     elif self.discard[-1] == 'Wild':
                         if first_is_wild:
-                            color_message = ['Player ' + list(self.player_names.values())[num].upper() + '\n',
-                                              'As the first player, please select a color for the wild card displayed.\n',
-                                              'Do not enter anything else other than a single number.\n',
-                                              'For example, if you want the color option 1, insert 1, not the color.\n\n',
-                                              'Choose your prefered color for the game to continue:\n\n',
-                                              '1- red\n',
-                                              '2- blue\n',
-                                              '3- green\n',
-                                              '4- yellow']
-                            color_choice = simpledialog.askstring("Pass", ''.join(color_message))
-                            while color_choice not in ['1', '2', '3', '4']:
-                                print('##\nError: You need to insert a number from 1 to 4.\n')
-                                color_choice = simpledialog.askstring("Pass", ''.join(color_message))
-                            color_choice = int(color_choice)
-                            if color_choice == 1:
-                                self.wild_color = '-red'
-                            elif color_choice == 2:
-                                self.wild_color = '-blue'
-                            elif color_choice == 3:
-                                self.wild_color = '-green'
-                            elif color_choice == 4:
-                                self.wild_color = '-yellow'
-                            first_is_wild = False
-                            if self.wild_color == '-red':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_red'))
-                            elif self.wild_color == '-blue':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_cyan'))
-                            elif self.wild_color == '-green':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_green'))
-                            elif self.wild_color == '-yellow':
-                                print('\nThe new color called by Player', list(players_cards.keys())[num].upper(), 'is',
-                                      colored(self.wild_color.upper(), 'black', on_color='on_magenta'))
+                            self.wild_color = set_wild_color(self.discard[-1])
                             option_chosen = test_validity()
                             if option_chosen == '888':
                                 reshuffle_discarded()
@@ -636,6 +599,7 @@ class MyUnoGame():
                                 player_quit()
                             else:
                                 play_acard()
+                            first_is_wild = False
                         elif not first_is_wild:
                             option_chosen = test_validity()
                             if option_chosen == '888':
@@ -647,8 +611,142 @@ class MyUnoGame():
                                 player_quit()
                             else:
                                 play_acard()
-                
-                ################### CHECK THE PROBLEM WITH THE WILD CARD LEGALITY CONDITION)
+                    
+                    ## When there is a Wild Draw Four displayed
+                    elif self.discard[-1] == 'Wild Draw Four':
+                        if draw_four_skip == True:
+                            draw_four_skip = False
+                            option_chosen = test_validity_wdf()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_four_cards = list(random.sample(self.pile, 4))
+                                players_cards[list(players_cards.keys())[num]].append(get_four_cards[0])
+                                players_cards[list(players_cards.keys())[num]].append(get_four_cards[1])
+                                players_cards[list(players_cards.keys())[num]].append(get_four_cards[2])
+                                players_cards[list(players_cards.keys())[num]].append(get_four_cards[3])
+                                self.pile.pop(self.pile.index(get_four_cards[0]))
+                                self.pile.pop(self.pile.index(get_four_cards[1]))
+                                self.pile.pop(self.pile.index(get_four_cards[2]))
+                                self.pile.pop(self.pile.index(get_four_cards[3]))
+                                print('\nPlayer', list(players_cards.keys())[num].upper(),
+                                      'has picked four more cards')
+                            elif option_chosen == '999':
+                                player_quit()
+                            elif option_chosen == '000':
+                                self.show_card = 'Prev'
+                                print('\nPlayer', list(players_cards.keys())[num].upper(),
+                                      'has challenged the "Wild Draw Four".\n')
+                                show_player_card()
+                                if num == 0:
+                                    number_valid_move = 0
+                                    for card in list(players_cards.values())[quantity_players - 1]:
+                                        if card == 'Wild Draw Four':
+                                            pass
+                                        elif ismove_legal(card) == 'Illegal Move':
+                                            number_valid_move += 0
+                                        elif ismove_legal(card) == 'Legal Move':
+                                            number_valid_move += 1
+                                    if number_valid_move > 0:
+                                        print('Challenge succesful!!!\n',
+                                              'Player', list(players_cards.keys())[quantity_players - 1].upper(),
+                                              'made an illegal move and will pick the four cards instead.\n')
+                                        reshuffle_discarded()
+                                        get_four_cards = list(random.sample(self.pile, 4))
+                                        players_cards[list(players_cards.keys())[quantity_players - 1]].append(get_four_cards[0])
+                                        players_cards[list(players_cards.keys())[quantity_players - 1]].append(get_four_cards[1])
+                                        players_cards[list(players_cards.keys())[quantity_players - 1]].append(get_four_cards[2])
+                                        players_cards[list(players_cards.keys())[quantity_players - 1]].append(get_four_cards[3])
+                                        self.pile.pop(self.pile.index(get_four_cards[0]))
+                                        self.pile.pop(self.pile.index(get_four_cards[1]))
+                                        self.pile.pop(self.pile.index(get_four_cards[2]))
+                                        self.pile.pop(self.pile.index(get_four_cards[3]))
+                                        print('\nPlayer', list(players_cards.keys())[quantity_players - 1].upper(),
+                                              'has picked four more cards.\n')
+                                        option_chosen = test_validity()
+                                        play_acard()
+                                    elif number_valid_move == 0:
+                                        print('Challenge failed!!!\n',
+                                              'Player', list(players_cards.keys())[quantity_players - 1].upper(),
+                                              'made an legal move.\n',
+                                              'Player', list(players_cards.keys())[num].upper(),
+                                              'will pick 6 cards instead.\n')
+                                        reshuffle_discarded()
+                                        get_six_cards = list(random.sample(self.pile, 6))
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[0])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[1])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[2])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[3])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[4])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[5])
+                                        self.pile.pop(self.pile.index(get_six_cards[0]))
+                                        self.pile.pop(self.pile.index(get_six_cards[1]))
+                                        self.pile.pop(self.pile.index(get_six_cards[2]))
+                                        self.pile.pop(self.pile.index(get_six_cards[3]))
+                                        self.pile.pop(self.pile.index(get_six_cards[4]))
+                                        self.pile.pop(self.pile.index(get_six_cards[5]))
+                                        print('\nPlayer', list(players_cards.keys())[num].upper(),
+                                              'has picked six more cards.\n')
+                                else:
+                                    number_valid_move = 0
+                                    for card in list(players_cards.values())[num-1]:
+                                        if card == 'Wild Draw Four':
+                                            pass
+                                        elif ismove_legal(card) == 'Illegal Move':
+                                            number_valid_move += 0
+                                        elif ismove_legal(card) == 'Legal Move':
+                                            number_valid_move += 1
+                                    if number_valid_move > 0:
+                                        print('\nChallenge succesful!!!\n',
+                                              'Player', list(players_cards.keys())[num-1].upper(),
+                                              'made an illegal move and will pick the four cards instead.\n')
+                                        reshuffle_discarded()
+                                        get_four_cards = list(random.sample(self.pile, 4))
+                                        players_cards[list(players_cards.keys())[num-1]].append(get_four_cards[0])
+                                        players_cards[list(players_cards.keys())[num-1]].append(get_four_cards[1])
+                                        players_cards[list(players_cards.keys())[num-1]].append(get_four_cards[2])
+                                        players_cards[list(players_cards.keys())[num-1]].append(get_four_cards[3])
+                                        self.pile.pop(self.pile.index(get_four_cards[0]))
+                                        self.pile.pop(self.pile.index(get_four_cards[1]))
+                                        self.pile.pop(self.pile.index(get_four_cards[2]))
+                                        self.pile.pop(self.pile.index(get_four_cards[3]))
+                                        print('\nPlayer', list(players_cards.keys())[num-1].upper(),
+                                              'has picked four more cards.\n')
+                                        option_chosen = test_validity()
+                                        play_acard()
+                                    elif number_valid_move == 0:
+                                        print('\nChallenge failed!!!\n',
+                                              'Player', list(players_cards.keys())[num-1].upper(),
+                                              'made an legal move.\n',
+                                              'Player', list(players_cards.keys())[num].upper(),
+                                              'will pick 6 cards instead.\n')
+                                        reshuffle_discarded()
+                                        get_six_cards = list(random.sample(self.pile, 6))
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[0])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[1])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[2])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[3])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[4])
+                                        players_cards[list(players_cards.keys())[num]].append(get_six_cards[5])
+                                        self.pile.pop(self.pile.index(get_six_cards[0]))
+                                        self.pile.pop(self.pile.index(get_six_cards[1]))
+                                        self.pile.pop(self.pile.index(get_six_cards[2]))
+                                        self.pile.pop(self.pile.index(get_six_cards[3]))
+                                        self.pile.pop(self.pile.index(get_six_cards[4]))
+                                        self.pile.pop(self.pile.index(get_six_cards[5]))
+                                        print('\nPlayer', list(players_cards.keys())[num].upper(),
+                                              'has picked six more cards.\n')
+                        elif draw_four_skip == False:
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                            elif option_chosen == '999':
+                                player_quit()
+                            else:
+                                play_acard()
+                                draw_four_skip = True
                         
                 # Compiling iteration and actions and reset turns
                 quantity_players -= self.number_players_left
