@@ -5,15 +5,16 @@ Created on Fri May 24 16:42:14 2024
 @author: Ralph Valery VALIERE
 """
 
-# This is the code for the last UNO version. UNO is a game owned by Mattel and
+# This is my code for the last UNO game version. UNO is a game owned by Mattel and
 # all rules, with some modifications, used in this script are coming from:
     # https://www.unorules.com/
 # The version I coded is inspired by the latest Classic UNO version.
 # But there exists more than a dozen of UNO version. Everytime you want 
 # to know what version is being played, please refer to the rules coded here...
 # UNO can be played with 2 and up to 10 players.
-# YOU WILL NEED INTERNET TO RUN THE GAME. SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY!
+# YOU WILL NEED INTERNET TO LAUNCH THE GAME THE FIRST TIME.
+# SOME FEATURES REQUIRES A CONNECTION!
+# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!
 
 
 # >>> Start runnning code here
@@ -183,23 +184,23 @@ class MyUnoGame():
         self.pile.pop(self.pile.index(first_card[0]))
         self.discard.append(first_card[0])
         if first_card[0].endswith('-red'):
-            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_red'))
+            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_red'), '\n')
         elif first_card[0].endswith('-yellow'):
-            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_magenta'))
+            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_magenta'), '\n')
         elif first_card[0].endswith('-blue'):
-            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_cyan'))
+            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_cyan'), '\n')
         elif first_card[0].endswith('-green'):
-            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_green'))
+            print('\nThe first card is ', colored(first_card[0], 'black', on_color='on_green'), '\n')
         else:
             print('\nThe first card is a: ', first_card[0], )
         
-        first_card[0] = 'Wild'
+        first_card[0] = 'Wild Swap Hand'
         if first_card[0] in ['Wild Swap Hand', 'Wild Shuffle Hands',
                              'Wild Customizable', 'Wild']:
             first_is_wild = True # Initializing condition showing if first card displayed is a wild card"
         else:
             first_is_wild = False # Initializing condition showing if first card displayed is a wild card"
-        self.discard.append('Wild')
+        self.discard.append('Wild Swap Hand')
 
         # Creating a function to put back the discarded cards into the pile, when there is less
         # than 11 cards left in the pile...
@@ -272,13 +273,17 @@ class MyUnoGame():
         
         def ismove_legal(played):
             if ((self.discard[-1] == ('Draw Two-red') and (not played.endswith('-red') and
-                                                           not played.startswith('W'))) or
-                (self.discard[-1] == ('Draw Two-blue') and (not played.endswith('-blue') and
-                                                               not played.startswith('W'))) or
-                (self.discard[-1] == ('Draw Two-green') and (not played.endswith('-green') and
-                                                               not played.startswith('W'))) or
-                (self.discard[-1] == ('Draw Two-yellow') and (not played.endswith('-yellow') and
-                                                               not played.startswith('W')))):
+                                                           (not played.startswith('W') and
+                                                            not played.startswith('Draw Two')))) or
+                (self.discard[-1] == ('Draw Two-blue') and (not played.endswith('-blue') and 
+                                                            (not played.startswith('W') and
+                                                             not played.startswith('Draw Two')))) or
+                (self.discard[-1] == ('Draw Two-green') and (not played.endswith('-green') and 
+                                                             (not played.startswith('W') and
+                                                              not played.startswith('Draw Two')))) or
+                (self.discard[-1] == ('Draw Two-yellow') and (not played.endswith('-yellow') and 
+                                                              (not played.startswith('W') and
+                                                               not played.startswith('Draw Two'))))):
                 legality_message = 'Illegal Move'
             elif (((self.discard[-1].startswith('Skip') and self.discard[-1].endswith('-red')) and 
                    (not played.endswith('-red') and (not played.startswith('W') and not played.startswith('Skip')))) or 
@@ -361,12 +366,18 @@ class MyUnoGame():
                                       'quit the game: \n\n',
                                       '888) Pass (or Draw cards if required)\n',
                                       '999) Concede the game']
-                    wild_four_message = [list(players_cards.keys())[num].upper(), '\n',
+                    wild_four_message = [list(players_cards.keys())[num].upper(), '\n\n',
                                       'A Wild Draw Four card has been played! You can draw four cards or\n',
                                       'challenge (refer to rules for challenge) or quit the game: \n\n',
                                       '888) Pass (or Draw cards if required)\n',
                                       '999) Concede the game\n',
                                       '000) Challenge the Wild Draw Four']
+                    
+                    swap_hand_message = ['Choose the player you want to swap hands with:\n\n',
+                                         ''.join([str(list(players_cards.keys()).index(player)+1) + '- ' + player.upper() +
+                                                  ' has ' + str(len(qt)) +
+                                                  ' cards\n' for player, qt in players_cards.items()]),
+                                         '888- No swap (choose color only)']
                     
                     # Create a function to run validity and legality test when card is
                     # played by players
@@ -467,11 +478,41 @@ class MyUnoGame():
                                 legality_condition = True
                         return option_chosen
                     
+                    # Creating a function to swap hands when wild card ask to do that
+                    
+                    def swap_hands():
+                        swap_validity_condition = False # Condition for validity of player chosen for swap
+                        while not swap_validity_condition:
+                            player_chosen = simpledialog.askstring('Pass', ''.join(swap_hand_message))
+                            try:
+                                if int(player_chosen) == num+1:
+                                    print('You cannot choose your own hand. If you do not want to swap hand,',
+                                          'please select option 888.\n')
+                                elif int(player_chosen) != num+1 and int(player_chosen) in range(1, quantity_players+1):
+                                    hand_player_swapping = list(players_cards.values())[num]
+                                    hand_player_swapped = list(players_cards.values())[int(player_chosen)-1]
+                                    players_cards[list(players_cards.keys())[num]] = hand_player_swapped
+                                    players_cards[list(players_cards.keys())[int(player_chosen)-1]] = hand_player_swapping
+                                    print('Player', list(players_cards.keys())[num].upper(), 'has swapped hands with',
+                                          'Player', list(players_cards.keys())[int(player_chosen)-1].upper(), '\n')
+                                    swap_validity_condition = True
+                                elif player_chosen == '888':
+                                    print('Player', list(players_cards.keys())[num].upper(), 'decided not to',
+                                          'swap hands with any player. Player will pick color.\n')
+                                    swap_validity_condition = True
+                                elif player_chosen != '888' and int(player_chosen) not in range(1, quantity_players+1):
+                                    print('##\nError: You need to insert a number from the list available.\n')
+                            except IndexError:
+                                print('##\nError: You need to insert a number from the list available.\n')
+                            except ValueError:
+                                print('##\nError: You need to insert a number from the list available.\n')
+                    
                     # Creating a function to analyze action when 1 or more players abandon the game
                     
                     def player_quit():
                         if quantity_players > 2:
                             player_who_left.append(list(players_cards.keys())[num])
+                            print('\nPlayer', list(players_cards.keys())[num].upper(), 'has left the game.\n')
                             self.number_players_left += 1
                         elif quantity_players < 3:
                             del players_cards[list(players_cards.keys())[num]]
@@ -488,20 +529,25 @@ class MyUnoGame():
                         index_card = players_cards[list(players_cards.keys())[num]].index(card_played)
                         players_cards[list(players_cards.keys())[num]].pop(index_card)
                         self.discard.append(card_played)
-                        if card_played.startswith('W'):
+                        if card_played.startswith('W') and card_played == 'Wild Swap Hand':
+                            print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
+                            swap_hands()
+                            print('The new displayed card is a: ', self.discard[-1], '\n')
                             self.wild_color = set_wild_color(card_played)
-                            print('\nPlayer', list(players_cards.keys())[num].upper(), 'has played: ', card_played)
-                            print('\nThe new displayed card is a: ', self.discard[-1])
+                        elif card_played.startswith('W') and card_played != 'Wild Swap Hand':
+                            self.wild_color = set_wild_color(card_played)
+                            print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
+                            print('The new displayed card is a: ', self.discard[-1], '\n')
                         else:
-                            print('\nPlayer', list(players_cards.keys())[num].upper(), 'has played: ', card_played)
+                            print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
                             if self.discard[-1].endswith('-red'):
-                                print('\nThe new displayed card is ', colored(self.discard[-1], 'black', on_color='on_red'))
+                                print('The new displayed card is ', colored(self.discard[-1], 'black', on_color='on_red'), '\n')
                             elif self.discard[-1].endswith('-yellow'):
-                                print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_magenta'))
+                                print('The new displayed is ', colored(self.discard[-1], 'black', on_color='on_magenta'), '\n')
                             elif self.discard[-1].endswith('-blue'):
-                                print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_cyan'))
+                                print('The new displayed is ', colored(self.discard[-1], 'black', on_color='on_cyan'), '\n')
                             elif self.discard[-1].endswith('-green'):
-                                print('\nThe new displayed is ', colored(self.discard[-1], 'black', on_color='on_green'))
+                                print('The new displayed is ', colored(self.discard[-1], 'black', on_color='on_green'), '\n')
                             else:
                                 print('\nThe new displayed card is a: ', self.discard[-1])
                     
@@ -546,7 +592,7 @@ class MyUnoGame():
                                 players_cards[list(players_cards.keys())[num]].append(get_two_cards[1])
                                 self.pile.pop(self.pile.index(get_two_cards[0]))
                                 self.pile.pop(self.pile.index(get_two_cards[1]))
-                                print('\nPlayer', list(players_cards.keys())[num].upper(), 'has picked two more cards')
+                                print('\nPlayer', list(players_cards.keys())[num].upper(), 'has picked two more cards.\n')
                             elif option_chosen == '999':
                                 player_quit()
                         elif draw_two_skip == False:
@@ -747,7 +793,37 @@ class MyUnoGame():
                             else:
                                 play_acard()
                                 draw_four_skip = True
-                        
+                    
+                    ## When there is a Wild Swap Hand displayed
+                    elif self.discard[-1] == 'Wild Swap Hand':
+                        if first_is_wild:
+                            print('The first card is a Wild Swap Hands. You can swap hand with one player',
+                                  'and just choose a color.\nOr you can decide to not swap and choose the color only.\n')
+                            swap_hands()
+                            set_wild_color('Wild Swap Hand')
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                            elif option_chosen == '999':
+                                player_quit()
+                            else:
+                                play_acard()
+                            first_is_wild = False
+                        elif not first_is_wild:
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                            elif option_chosen == '999':
+                                player_quit()
+                            else:
+                                play_acard()
+                    
                 # Compiling iteration and actions and reset turns
                 quantity_players -= self.number_players_left
                 if self.number_players_left == 0:
@@ -814,10 +890,26 @@ abc = MyUnoGame(3)
 abc.play('with_score', max_points=500)
 len(abc.pile)
 
-upper('sa')
+['sasa' +
+ 'Papa']
 
 #########
 x = [1, 2, 3, 4, 5, 6, 7]
+
+type(x[0])
+y = [2 * a for a in x]
+str()
+x.index(4)
+[a + b for a,b in xy]
+
+
+
+
+import numpy
+numpy.array(x) * 2
+
+
+
 print(f'length of x is {len(x)}')
 w = []
 w.append(x[0])
@@ -830,6 +922,18 @@ for a in w:
 #######
 
 y = {'a':[1, 2], 'b':[4, 6], 'c':[9, 7]}
+
+y['a'] = [10, 11]
+
+str(list(y.keys()).index('c'))
+
+
+ya = ['Bon. Banm test\n', ''.join(yax)]
+yax = ['- ' + player.upper() + ' has ' + 
+ str(len(qt)) + ' cards\n' for player, qt in y.items()]
+
+print(''.join(ya))
+
 y['b'].pop(y['b'].index(6))
 
 def test():
