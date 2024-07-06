@@ -14,7 +14,7 @@ Created on Fri May 24 16:42:14 2024
 # UNO can be played with 2 and up to 10 players.
 # YOU WILL NEED INTERNET TO LAUNCH THE GAME THE FIRST TIME.
 # SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!
+# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!!
 
 
 # >>> Start runnning code here
@@ -194,13 +194,13 @@ class MyUnoGame():
         else:
             print('\nThe first card is a: ', first_card[0], )
         
-        first_card[0] = 'Wild Swap Hand'
+        first_card[0] = 'Wild Shuffle Hands'
         if first_card[0] in ['Wild Swap Hand', 'Wild Shuffle Hands',
                              'Wild Customizable', 'Wild']:
             first_is_wild = True # Initializing condition showing if first card displayed is a wild card"
         else:
             first_is_wild = False # Initializing condition showing if first card displayed is a wild card"
-        self.discard.append('Wild Swap Hand')
+        self.discard.append('Wild Shuffle Hands')
 
         # Creating a function to put back the discarded cards into the pile, when there is less
         # than 11 cards left in the pile...
@@ -226,7 +226,7 @@ class MyUnoGame():
             if wild in ['Wild Swap Hand', 'Wild Shuffle Hands', 'Wild Customizable',
              'Wild', 'Wild Draw Four']:
                 wild_color_message = ['Player ' + list(self.player_names.values())[num].upper() + '\n',
-                                      'Please select a color for the wild card you just played.\n',
+                                      'Please select a color for the wild card played or displayed.\n',
                                       'Do not enter anything else other than a single number.\n',
                                       'For example, if you want the color option 1, insert 1, not the color.\n\n',
                                       'Choose your prefered color for the game to continue:\n\n',
@@ -507,6 +507,27 @@ class MyUnoGame():
                             except ValueError:
                                 print('##\nError: You need to insert a number from the list available.\n')
                     
+                    # Creating a function to shuffle all cards in players' hands
+                    
+                    def shuffle_hands():
+                        shuffle_container = []
+                        [shuffle_container.append(card) for hand in list(players_cards.values()) for card in hand]
+                        for player in list(players_cards.keys()):
+                            players_cards[player] = []
+                        position_next_player = num+1
+                        while shuffle_container != []:
+                            while position_next_player < quantity_players:
+                                try:
+                                    card_redistributed = random.choice(shuffle_container)
+                                    player_targeted = list(players_cards.keys())[position_next_player]
+                                    players_cards[player_targeted].append(card_redistributed)
+                                    shuffle_container.pop(shuffle_container.index(card_redistributed))
+                                    position_next_player += 1
+                                except IndexError:
+                                    print('No more card to distribute')
+                                    break
+                            position_next_player = 0
+                    
                     # Creating a function to analyze action when 1 or more players abandon the game
                     
                     def player_quit():
@@ -534,7 +555,17 @@ class MyUnoGame():
                             swap_hands()
                             print('The new displayed card is a: ', self.discard[-1], '\n')
                             self.wild_color = set_wild_color(card_played)
-                        elif card_played.startswith('W') and card_played != 'Wild Swap Hand':
+                        elif card_played.startswith('W') and card_played == 'Wild Shuffle Hands':
+                            print('Player', list(players_cards.keys())[num].upper(), 'has played a Wild Shuffle Hands.\n',
+                                  'All card in players hand will be collected and shuffled.\n',
+                                  'Then, cards will be dealt evenly to all the players,\n',
+                                  'starting with the next player after the one who played the "Wild Shuffle Hands".\n')
+                            shuffle_hands()
+                            print('All reshuffled cards have been distributed.\n')
+                            for player in list(players_cards.keys()):
+                                print('Player', player, 'received', len(players_cards[player]), 'cards.\n')
+                            input('Type anything to continue: ')
+                        elif card_played.startswith('W') and card_played not in ['Wild Swap Hand', 'Wild Shuffle Hands']:
                             self.wild_color = set_wild_color(card_played)
                             print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
                             print('The new displayed card is a: ', self.discard[-1], '\n')
@@ -634,6 +665,8 @@ class MyUnoGame():
                     ## When there is a Wild displayed
                     elif self.discard[-1] == 'Wild':
                         if first_is_wild:
+                            print('The first card is a Wild.\n',
+                                  'Please choose the color before you can start playing.\n')
                             self.wild_color = set_wild_color(self.discard[-1])
                             option_chosen = test_validity()
                             if option_chosen == '888':
@@ -824,6 +857,39 @@ class MyUnoGame():
                             else:
                                 play_acard()
                     
+                    ## When there is a Wild Shuffle Hand
+                    elif self.discard[-1] == 'Wild Shuffle Hands':
+                        if first_is_wild:
+                            print('The first card is a Wild Shuffle Hands.\n',
+                                  'Please choose the color before you can start playing.\n')
+                            self.wild_color = set_wild_color(self.discard[-1])
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                            elif option_chosen == '999':
+                                player_quit()
+                            else:
+                                play_acard()
+                            first_is_wild = False
+                        elif not first_is_wild:
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                            elif option_chosen == '999':
+                                player_quit()
+                            else:
+                                play_acard()
+                    
+                    ## When there is a Wild Customizable
+                    elif self.discard[-1] == 'Wild Customizable':
+                    
+                    
                 # Compiling iteration and actions and reset turns
                 quantity_players -= self.number_players_left
                 if self.number_players_left == 0:
@@ -894,7 +960,12 @@ len(abc.pile)
  'Papa']
 
 #########
-x = [1, 2, 3, 4, 5, 6, 7]
+x = [1, "2", 'a', 4, "5", "6", 7]
+
+from numpy import random
+import random
+random.choice(x)
+random.sample(x, 1)
 
 type(x[0])
 y = [2 * a for a in x]
@@ -922,6 +993,10 @@ for a in w:
 #######
 
 y = {'a':[1, 2], 'b':[4, 6], 'c':[9, 7]}
+
+len(y['a'])
+
+[a**2 for p in list(y.values()) for a in p]
 
 y['a'] = [10, 11]
 
