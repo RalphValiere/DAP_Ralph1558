@@ -14,7 +14,7 @@ Created on Fri May 24 16:42:14 2024
 # UNO can be played with 2 and up to 10 players.
 # YOU WILL NEED INTERNET TO LAUNCH THE GAME THE FIRST TIME.
 # SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!!
+# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!
 
 
 # >>> Start runnning code here
@@ -194,13 +194,13 @@ class MyUnoGame():
         else:
             print('\nThe first card is a: ', first_card[0], )
         
-        first_card[0] = 'Wild Shuffle Hands'
+        first_card[0] = 'Wild Customizable'
         if first_card[0] in ['Wild Swap Hand', 'Wild Shuffle Hands',
                              'Wild Customizable', 'Wild']:
             first_is_wild = True # Initializing condition showing if first card displayed is a wild card"
         else:
             first_is_wild = False # Initializing condition showing if first card displayed is a wild card"
-        self.discard.append('Wild Shuffle Hands')
+        self.discard.append('Wild Customizable')
 
         # Creating a function to put back the discarded cards into the pile, when there is less
         # than 11 cards left in the pile...
@@ -334,6 +334,7 @@ class MyUnoGame():
         skip_next_player = True
         draw_two_skip = True
         draw_four_skip = True
+        wild_custom_on = True
         self.wild_color = '' # Initializing color for Wild cards
         self.show_card = '' # Initializing the command to show a player's card
         while all(len(hand) != 0 for hand in players_cards.values()):
@@ -372,12 +373,18 @@ class MyUnoGame():
                                       '888) Pass (or Draw cards if required)\n',
                                       '999) Concede the game\n',
                                       '000) Challenge the Wild Draw Four']
-                    
                     swap_hand_message = ['Choose the player you want to swap hands with:\n\n',
                                          ''.join([str(list(players_cards.keys()).index(player)+1) + '- ' + player.upper() +
                                                   ' has ' + str(len(qt)) +
                                                   ' cards\n' for player, qt in players_cards.items()]),
                                          '888- No swap (choose color only)']
+                    custom_ruleone_message = ['Player ', list(players_cards.keys())[num].upper(), '\n',
+                                              'A Wild Customizable has been played and the rule voted was:\n',
+                                              '-->"', self.wild_custom_rule, '"', '<--\n\n',
+                                              'Your hand has already been shown to the previous player.\n',
+                                              'Now, please choose the card you want to reshuffle.\n',
+                                              displayed_hand,
+                                              '888) Pass (Do not want to reshuffle any card)\n']
                     
                     # Create a function to run validity and legality test when card is
                     # played by players
@@ -480,6 +487,53 @@ class MyUnoGame():
                     
                     # Creating a function to swap hands when wild card ask to do that
                     
+                    def custom_reshuffle_onecard():
+                        validity_condition = False # Condition for validity of option chosen
+                        while not validity_condition:
+                            option_chosen = simpledialog.askstring("Pass", ''.join(custom_ruleone_message))
+                            try:
+                                       if option_chosen == '888':
+                                           print('Player', list(players_cards.keys())[num].upper(),
+                                                 'decided to NOT reshuffle any card.\n')
+                                           pass
+                                       else:
+                                           card_tobe_reshuffled = list(players_cards.values())[num][int(option_chosen)-1]
+                                           print('Player', list(players_cards.keys())[num].upper(),
+                                                 'decided to reshuffle:', card_tobe_reshuffled, '\n')
+                                           index_card_reshuffled = players_cards[list(players_cards.keys())[num]].index(card_tobe_reshuffled)
+                                           players_cards[list(players_cards.keys())[num]].pop(index_card_reshuffled)
+                                           self.pile.append(card_tobe_reshuffled)
+                                           from numpy import random 
+                                           new_card = random.choice(self.pile)
+                                           players_cards[list(players_cards.keys())[num]].append(new_card)
+                                           self.pile.pop(self.pile.index(new_card))
+                                           print('Card has been reshuffled.',
+                                                 'Player', list(players_cards.keys())[num].upper(),
+                                                 'can play their turn now.\n')
+                                           displayed_hand = []
+                                           number_card = len(list(players_cards.values())[num])
+                                           for position in range(0, number_card):
+                                               card_face = list(players_cards.values())[num][position]
+                                               card_list = ''.join([str(position+1), ') ',
+                                                                    str(card_face), '\n'])
+                                               displayed_hand.append(card_list)                   
+                                           displayed_hand = ''.join(displayed_hand)
+                                           options_message = [list(players_cards.keys())[num].upper(), '\n',
+                                                             'Your turn!\n', 'Please choose the card you want to play.\n',
+                                                             'Here is your hand: \n\n',
+                                                             displayed_hand,
+                                                             '888) Pass (or Draw cards if required)\n',
+                                                             '999) Concede the game']
+                                           
+                            except IndexError:
+                                print('##\nError: You need to insert a number from the list available.\n')
+                            except ValueError:
+                                print('##\nError: You need to insert a number from the list available.\n')
+                            if option_chosen not in number_options:
+                                validity_condition = False                     
+                            elif option_chosen in number_options:
+                                validity_condition = True
+                    
                     def swap_hands():
                         swap_validity_condition = False # Condition for validity of player chosen for swap
                         while not swap_validity_condition:
@@ -553,19 +607,40 @@ class MyUnoGame():
                         if card_played.startswith('W') and card_played == 'Wild Swap Hand':
                             print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
                             swap_hands()
-                            print('The new displayed card is a: ', self.discard[-1], '\n')
                             self.wild_color = set_wild_color(card_played)
+                            print('The new displayed card is a: ', self.discard[-1], '\n')
                         elif card_played.startswith('W') and card_played == 'Wild Shuffle Hands':
                             print('Player', list(players_cards.keys())[num].upper(), 'has played a Wild Shuffle Hands.\n',
                                   'All card in players hand will be collected and shuffled.\n',
                                   'Then, cards will be dealt evenly to all the players,\n',
                                   'starting with the next player after the one who played the "Wild Shuffle Hands".\n')
                             shuffle_hands()
+                            self.wild_color = set_wild_color(card_played)
                             print('All reshuffled cards have been distributed.\n')
                             for player in list(players_cards.keys()):
                                 print('Player', player, 'received', len(players_cards[player]), 'cards.\n')
                             input('Type anything to continue: ')
-                        elif card_played.startswith('W') and card_played not in ['Wild Swap Hand', 'Wild Shuffle Hands']:
+                        elif card_played.startswith('W') and card_played == 'Wild Customizable':
+                            print('Player', list(players_cards.keys())[num].upper(), 'has played a Wild Customizable.\n',
+                                  'The rule that has been voted at the beginning of the game is:.\n',
+                                  self.wild_custom_rule, '\n')
+                            if self.wild_custom_rule == self.rule_one:
+                                self.show_card = 'Next'
+                                show_player_card()
+                                input('\nOnce you are done visualizing the cards, type anything to continue: ')
+                            elif self.wild_custom_rule == self.rule_two:
+                                pass
+                            elif self.wild_custom_rule == self.rule_three:
+                                pass
+                                
+                            # self.rule_one = 'Next player hands is shown to you. But they reshufle 1 card.'
+                            # self.rule_two = 'Player with least card pick 2 cards from Draw Pile (person playing this card excluded)'
+                            # self.rule_three = 'Everyone but you will get 2 more cards'
+                            
+                            self.wild_color = set_wild_color(card_played)
+                        elif card_played.startswith('W') and card_played not in ['Wild Swap Hand', 
+                                                                                 'Wild Shuffle Hands',
+                                                                                 'Wild Customizable']:
                             self.wild_color = set_wild_color(card_played)
                             print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
                             print('The new displayed card is a: ', self.discard[-1], '\n')
@@ -888,7 +963,64 @@ class MyUnoGame():
                     
                     ## When there is a Wild Customizable
                     elif self.discard[-1] == 'Wild Customizable':
-                    
+                        if first_is_wild:
+                            print('The first card is a Wild Customizable.\n',
+                                  'Please choose the color before you can start playing.\n')
+                            self.wild_color = set_wild_color(self.discard[-1])
+                            option_chosen = test_validity()
+                            if option_chosen == '888':
+                                reshuffle_discarded()
+                                get_one_card = list(random.sample(self.pile, 1))
+                                players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                self.pile.pop(self.pile.index(get_one_card[0]))
+                                wild_custom_on = False
+                            elif option_chosen == '999':
+                                wild_custom_on = False
+                                player_quit()
+                            else:
+                                play_acard()
+                            first_is_wild = False
+                        elif not first_is_wild:
+                            if wild_custom_on == True:
+                                custom_reshuffle_onecard()
+                                displayed_hand = []
+                                number_card = len(list(players_cards.values())[num])
+                                for position in range(0, number_card):
+                                    card_face = list(players_cards.values())[num][position]
+                                    card_list = ''.join([str(position+1), ') ',
+                                                         str(card_face), '\n'])
+                                    displayed_hand.append(card_list)                   
+                                displayed_hand = ''.join(displayed_hand)
+                                options_message = [list(players_cards.keys())[num].upper(), '\n',
+                                                  'Your turn!\n', 'Please choose the card you want to play.\n',
+                                                  'Here is your hand: \n\n',
+                                                  displayed_hand,
+                                                  '888) Pass (or Draw cards if required)\n',
+                                                  '999) Concede the game']
+                                option_chosen = test_validity()
+                                if option_chosen == '888':
+                                    reshuffle_discarded()
+                                    get_one_card = list(random.sample(self.pile, 1))
+                                    players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                    self.pile.pop(self.pile.index(get_one_card[0]))
+                                    wild_custom_on = False
+                                elif option_chosen == '999':
+                                    wild_custom_on = False
+                                    player_quit()
+                                else:
+                                    play_acard()
+                            elif wild_custom_on == False:
+                                option_chosen = test_validity()
+                                if option_chosen == '888':
+                                    reshuffle_discarded()
+                                    get_one_card = list(random.sample(self.pile, 1))
+                                    players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                    self.pile.pop(self.pile.index(get_one_card[0]))
+                                elif option_chosen == '999':
+                                    player_quit()
+                                else:
+                                    play_acard()
+                                    wild_custom_on = True
                     
                 # Compiling iteration and actions and reset turns
                 quantity_players -= self.number_players_left
