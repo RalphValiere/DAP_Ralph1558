@@ -589,9 +589,17 @@ class MyUnoGame():
                             player_who_left.append(list(players_cards.keys())[num])
                             print('\nPlayer', list(players_cards.keys())[num].upper(), 'has left the game.\n')
                             self.number_players_left += 1
+                            if self.number_players_left == quantity_players:
+                                print('###', list(players_cards.keys())[len(list(players_cards.keys()))-1].upper(),
+                                      'has won the game. ###\n')
+                                input('Type anything to exit the game: ')
+                                import sys
+                                sys.exit()
+                            else:
+                                pass
                         elif quantity_players < 3:
                             del players_cards[list(players_cards.keys())[num]]
-                            print('\n', '#######', list(players_cards.keys())[0].upper(), 'has won the game. #######\n')
+                            print('###', list(players_cards.keys())[0].upper(), 'has won the game. ###\n')
                             input('Type anything to exit the game: ')
                             print(' ')
                             import sys
@@ -632,11 +640,11 @@ class MyUnoGame():
                                 print('Player', list(players_cards.keys())[num].upper(), 'has played a Wild Customizable.\n',
                                       'The rule that has been voted at the beginning of the game is:\n',
                                       self.wild_custom_rule, '\n')
-                                print('If there are more than one players with the least cards,\n',
+                                print('If there are more than one players with the least cards,',
                                       'the closest one to the player who played this card will pick the 2 cards.\n')
                                 print('Player', list(players_cards.keys())[num].upper())
                                 input('Please type anything to proceed: ')
-                                copy_players_cards = players_cards
+                                copy_players_cards = players_cards.copy()
                                 del copy_players_cards[list(players_cards.keys())[num]]
                                 number_card_left = [len(list(copy_players_cards.values())[pos])
                                                     for pos in range(len(list(copy_players_cards.values())))]
@@ -1089,7 +1097,7 @@ class MyUnoGame():
                     if quantity_players == 1:
                         for left in player_who_left:
                             del players_cards[left]
-                        print('\n', '#######', list(players_cards.keys())[0], 'has won the game. #######\n')
+                        print('###', list(players_cards.keys())[0].upper(), 'has won the game. ###\n')
                         input('Type anything to exit the system: ')
                         import sys
                         sys.exit()
