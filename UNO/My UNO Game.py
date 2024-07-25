@@ -14,7 +14,7 @@ Created on Fri May 24 16:42:14 2024
 # UNO can be played with 2 and up to 10 players.
 # YOU WILL NEED INTERNET TO LAUNCH THE GAME THE FIRST TIME.
 # SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!
+# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!!
 
 
 # >>> Start runnning code here
@@ -629,14 +629,58 @@ class MyUnoGame():
                                 show_player_card()
                                 input('\nOnce you are done visualizing the cards, type anything to continue: ')
                             elif self.wild_custom_rule == self.rule_two:
-                                pass
+                                print('Player', list(players_cards.keys())[num].upper(), 'has played a Wild Customizable.\n',
+                                      'The rule that has been voted at the beginning of the game is:\n',
+                                      self.wild_custom_rule, '\n')
+                                print('If there are more than one players with the least cards,\n',
+                                      'the closest one to the player who played this card will pick the 2 cards.\n')
+                                print('Player', list(players_cards.keys())[num].upper())
+                                input('Please type anything to proceed: ')
+                                copy_players_cards = players_cards
+                                del copy_players_cards[list(players_cards.keys())[num]]
+                                number_card_left = [len(list(copy_players_cards.values())[pos])
+                                                    for pos in range(len(list(copy_players_cards.values())))]
+                                players_least_cards = []
+                                for poss in range(len(list(copy_players_cards.values()))):
+                                    if len(list(copy_players_cards.values())[poss]) == min(number_card_left):
+                                        players_least_cards.append(list(copy_players_cards.keys())[poss])
+                                    else:
+                                        pass
+                                if len(players_least_cards) == 1:
+                                    reshuffle_discarded()
+                                    get_two_cards = list(random.sample(self.pile, 2))
+                                    players_cards[players_least_cards[0]].append(get_two_cards[0])
+                                    players_cards[players_least_cards[0]].append(get_two_cards[1])
+                                    self.pile.pop(self.pile.index(get_two_cards[0]))
+                                    self.pile.pop(self.pile.index(get_two_cards[1]))
+                                    print('Player', players_least_cards[0].upper(), 'has picked two more cards.\n')
+                                    print('Player', list(players_cards.keys())[num].upper())
+                                    input('Please type anything to end your turn: ')
+                                elif len(players_least_cards) > 1:
+                                    closest_player = ''
+                                    initial_reference = -99
+                                    for player in players_least_cards:
+                                        index_least_player = list(players_cards.keys()).index(player)
+                                        distance_to_active = index_least_player - num
+                                        if distance_to_active > initial_reference:
+                                            initial_reference = distance_to_active
+                                            closest_player = player
+                                        else:
+                                            pass
+                                    reshuffle_discarded()
+                                    get_two_cards = list(random.sample(self.pile, 2))
+                                    players_cards[closest_player].append(get_two_cards[0])
+                                    players_cards[closest_player].append(get_two_cards[1])
+                                    self.pile.pop(self.pile.index(get_two_cards[0]))
+                                    self.pile.pop(self.pile.index(get_two_cards[1]))
+                                    print('Player', closest_player.upper(), 'has picked two more cards.\n')
+                                    print('Player', list(players_cards.keys())[num].upper())
+                                    input('Please type anything to end your turn: ')                            
+                            
+                            ###### FOK OU FIN KORIJE SA! #####
+                            
                             elif self.wild_custom_rule == self.rule_three:
                                 pass
-                                
-                            # self.rule_one = 'Next player hands is shown to you. But they reshufle 1 card.'
-                            # self.rule_two = 'Player with least card pick 2 cards from Draw Pile (person playing this card excluded)'
-                            # self.rule_three = 'Everyone but you will get 2 more cards'
-                            
                             self.wild_color = set_wild_color(card_played)
                         elif card_played.startswith('W') and card_played not in ['Wild Swap Hand', 
                                                                                  'Wild Shuffle Hands',
@@ -981,7 +1025,7 @@ class MyUnoGame():
                                 play_acard()
                             first_is_wild = False
                         elif not first_is_wild:
-                            if wild_custom_on == True:
+                            if wild_custom_on == True and self.wild_custom_rule == self.rule_one:
                                 custom_reshuffle_onecard()
                                 displayed_hand = []
                                 number_card = len(list(players_cards.values())[num])
@@ -1009,6 +1053,21 @@ class MyUnoGame():
                                     player_quit()
                                 else:
                                     play_acard()
+                            elif wild_custom_on == True and self.wild_custom_rule == self.rule_two:
+                                option_chosen = test_validity()
+                                if option_chosen == '888':
+                                    reshuffle_discarded()
+                                    get_one_card = list(random.sample(self.pile, 1))
+                                    players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
+                                    self.pile.pop(self.pile.index(get_one_card[0]))
+                                    wild_custom_on = False
+                                elif option_chosen == '999':
+                                    wild_custom_on = False
+                                    player_quit()
+                                else:
+                                    play_acard()
+                            elif wild_custom_on == True and self.wild_custom_rule == self.rule_three:
+                                pass
                             elif wild_custom_on == False:
                                 option_chosen = test_validity()
                                 if option_chosen == '888':
@@ -1092,8 +1151,15 @@ len(abc.pile)
  'Papa']
 
 #########
-x = [1, "2", 'a', 4, "5", "6", 7]
+x = [[1], [7], [9]]
 
+min(x)
+w = ['w', 'asa', 'res']
+z = {w[i]:x[i]
+     for i in range(len(x))}
+z['w'].append(2)
+z.keys().index('w')
+list(z.keys()).index('res')
 from numpy import random
 import random
 random.choice(x)
@@ -1106,7 +1172,9 @@ x.index(4)
 [a + b for a,b in xy]
 
 
+avc = 'manman'
 
+input(avc)
 
 import numpy
 numpy.array(x) * 2
@@ -1124,8 +1192,13 @@ for a in w:
     x.pop(x.index(a))
 #######
 
-y = {'a':[1, 2], 'b':[4, 6], 'c':[9, 7]}
+y = {'a':12, 'b':6, 'c':6}
+list(y.keys())[0]
 
+list(y.values()).index(min(y.values()))
+
+
+y.index(min(y.values()))
 len(y['a'])
 
 [a**2 for p in list(y.values()) for a in p]
