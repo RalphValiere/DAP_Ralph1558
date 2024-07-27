@@ -14,7 +14,7 @@ Created on Fri May 24 16:42:14 2024
 # UNO can be played with 2 and up to 10 players.
 # YOU WILL NEED INTERNET TO LAUNCH THE GAME THE FIRST TIME.
 # SOME FEATURES REQUIRES A CONNECTION!
-# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!!
+# PLEASE! ENJOY! AND DON'T FORGET TO SEND ANY COMMENTS!!!!!
 
 
 # >>> Start runnning code here
@@ -332,9 +332,9 @@ class MyUnoGame():
         draw_two_skip = True # Initializing condition for skipping player when Draw Two is displayed
         draw_four_skip = True # Initializing condition for skipping player when Wild Draw Four is displayed
         wild_custom_on = True # Initializing condition for rule one when Wild Customizable is displayed
-        just_miss_uno = True # Initializing condition to know a player who missed calling UNO in the previous turn
-        recent_whomiss_uno = '' # Initializing the name for player who missed calling UNO in the previous turn
-        players_whoare_uno = [] # Initializing the list of players who are UNO in this turn
+        self.just_miss_uno = False # Initializing condition to know a player who missed calling UNO in the previous turn
+        self.recent_whomiss_uno = '' # Initializing the name for player who missed calling UNO in the previous turn
+        self.players_whoare_uno = [] # Initializing the list of players who are UNO in this turn
         self.wild_color = '' # Initializing color for Wild cards
         self.show_card = '' # Initializing the command to show a player's card
         while all(len(hand) != 0 for hand in players_cards.values()):
@@ -391,7 +391,8 @@ class MyUnoGame():
                                    '777) Continue playing\n',
                                    '999) Concede the game']
                     
-                    uno_challenge_message = ['Player', recent_whomiss_uno, 'missed calling *UNO*.\n',
+                    uno_challenge_message = ['Player', list(players_cards.keys())[num].upper(), '::\n',
+                                             'Player ', self.recent_whomiss_uno.upper(), ' missed calling *UNO* during their turn.\n',
                                              'What do you want to do as next move?\n\n',
                                              '000) Challenge the missed *UNO*\n',
                                              '777) Continue playing\n',
@@ -502,7 +503,7 @@ class MyUnoGame():
                                 legality_condition = True
                         return option_chosen
                     
-                    # Creating a function to swap hands when wild card ask to do that
+                    # Creating a function to reshuffle one card from a player's hand, when Wild Customizable is played
                     
                     def custom_reshuffle_onecard():
                         validity_condition = False # Condition for validity of option chosen
@@ -551,6 +552,8 @@ class MyUnoGame():
                             elif option_chosen in number_options:
                                 validity_condition = True
                     
+                    # Creating a function to swap hands when wild card ask to do that
+                    
                     def swap_hands():
                         swap_validity_condition = False # Condition for validity of player chosen for swap
                         while not swap_validity_condition:
@@ -564,6 +567,8 @@ class MyUnoGame():
                                     hand_player_swapped = list(players_cards.values())[int(player_chosen)-1]
                                     players_cards[list(players_cards.keys())[num]] = hand_player_swapped
                                     players_cards[list(players_cards.keys())[int(player_chosen)-1]] = hand_player_swapping
+                                    breaking_uno(list(players_cards.keys())[num])
+                                    breaking_uno(list(players_cards.keys())[int(player_chosen)-1])
                                     print('Player', list(players_cards.keys())[num].upper(), 'has swapped hands with',
                                           'Player', list(players_cards.keys())[int(player_chosen)-1].upper(), '\n')
                                     swap_validity_condition = True
@@ -598,6 +603,8 @@ class MyUnoGame():
                                     print('No more card to distribute')
                                     break
                             position_next_player = 0
+                        for player in list(players_cards.keys()):
+                            breaking_uno(player)
                     
                     # Creating a function to analyze action when 1 or more players abandon the game
                     
@@ -630,20 +637,20 @@ class MyUnoGame():
                             while not validity_condition:
                                 uno_option_chosen = simpledialog.askstring("Pass", ''.join(uno_message))
                                 try:
-                                           if uno_option_chosen == '111':
-                                               print('#### Player', list(players_cards.keys())[num].upper(), 'has called *UNO*. ####\n')
-                                               players_whoare_uno.append(list(players_cards.keys())[num])
-                                               validity_condition = True
-                                           elif uno_option_chosen == '777':
-                                               just_miss_uno = True
-                                               recent_whomiss_uno = list(players_cards.keys())[num]
-                                               validity_condition = True
-                                           elif uno_option_chosen == '999':
-                                               player_quit()
-                                               validity_condition = True
-                                           else:
-                                               print('##\nError: You need to insert a number from the list available.\n')
-                                               validity_condition = False
+                                    if uno_option_chosen == '111':
+                                        print('#### Player', list(players_cards.keys())[num].upper(), 'has called *UNO*. ####\n')
+                                        self.players_whoare_uno.append(list(players_cards.keys())[num])
+                                        validity_condition = True
+                                    elif uno_option_chosen == '777':
+                                        self.just_miss_uno = True
+                                        self.recent_whomiss_uno = list(players_cards.keys())[num]
+                                        validity_condition = True
+                                    elif uno_option_chosen == '999':
+                                        player_quit()
+                                        validity_condition = True
+                                    else:
+                                        print('##\nError: You need to insert a number from the list available.\n')
+                                        validity_condition = False
                                 except IndexError:
                                     print('##\nError: You need to insert a number from the list available.\n')
                                 except ValueError:
@@ -654,55 +661,65 @@ class MyUnoGame():
                     # Creating a function to challenge a recent player who missed calling *UNO*
                     
                     def challenge_uno():
-                        if just_miss_uno == True:
+                        if self.just_miss_uno == True:
                             validity_condition = False # Condition for validity of option chosen
                             while not validity_condition:
                                 challenge_option_chosen = simpledialog.askstring("Pass", ''.join(uno_challenge_message))
                                 try:
-                                           if uno_option_chosen == '000':
-                                               print('#### Player', list(players_cards.keys())[num].upper(), 'has challenged the *UNO* calling',
-                                                     'missed by', recent_whomiss_uno.upper(), '. ####\n')
-                                               print('Player', recent_whomiss_uno.upper(), 'will pick 2 more cards.\n')
-                                               reshuffle_discarded()
-                                               get_two_cards = list(random.sample(self.pile, 2))
-                                               players_cards[recent_whomiss_uno].append(get_two_cards[0])
-                                               players_cards[recent_whomiss_uno].append(get_two_cards[1])
-                                               self.pile.pop(self.pile.index(get_two_cards[0]))
-                                               self.pile.pop(self.pile.index(get_two_cards[1]))
-                                               print('Player', recent_whomiss_uno.upper(), 'has picked two more cards.\n')
-                                               print('Player', list(players_cards.keys())[num].upper())
-                                               input('Please type anything to proceed: ')
-                                               just_miss_uno == False
-                                               recent_whomiss_uno = ''
-                                               validity_condition = True
-                                           elif uno_option_chosen == '777':
-                                               just_miss_uno == False
-                                               recent_whomiss_uno = ''
-                                               validity_condition = True
-                                           elif uno_option_chosen == '999':
-                                               just_miss_uno == False
-                                               recent_whomiss_uno = ''
-                                               player_quit()
-                                               validity_condition = True
-                                           else:
-                                               print('##\nError: You need to insert a number from the list available.\n')
-                                               validity_condition = False
+                                    if challenge_option_chosen == '000':
+                                        print('#### Player', list(players_cards.keys())[num].upper(), 'has challenged the *UNO* calling',
+                                              'missed by', self.recent_whomiss_uno.upper(), '. ####\n')
+                                        print('Player', self.recent_whomiss_uno.upper(), 'will pick 2 more cards.\n')
+                                        reshuffle_discarded()
+                                        get_two_cards = list(random.sample(self.pile, 2))
+                                        players_cards[self.recent_whomiss_uno].append(get_two_cards[0])
+                                        players_cards[self.recent_whomiss_uno].append(get_two_cards[1])
+                                        self.pile.pop(self.pile.index(get_two_cards[0]))
+                                        self.pile.pop(self.pile.index(get_two_cards[1]))
+                                        print('Player', self.recent_whomiss_uno.upper(), 'has picked two more cards',
+                                              'because they missed calling *UNO*.\n')
+                                        print('Player', list(players_cards.keys())[num].upper())
+                                        input('Please type anything to proceed: ')
+                                        self.just_miss_uno = False
+                                        self.recent_whomiss_uno = ''
+                                        validity_condition = True
+                                    elif challenge_option_chosen == '777':
+                                        self.just_miss_uno = False
+                                        self.recent_whomiss_uno = ''
+                                        validity_condition = True
+                                    elif challenge_option_chosen == '999':
+                                        self.just_miss_uno = False
+                                        self.recent_whomiss_uno = ''
+                                        player_quit()
+                                        validity_condition = True
+                                    else:
+                                        print('##\nError: You need to insert a number from the list available.\n')
+                                        validity_condition = False
                                 except IndexError:
                                     print('##\nError: You need to insert a number from the list available.\n')
                                 except ValueError:
                                     print('##\nError: You need to insert a number from the list available.\n')
                         else:
-                            just_miss_uno = False
+                            self.just_miss_uno = False
                     
                     # Creatin a function to display all players who called *UNO* and are still *UNO*
                     
                     def display_all_uno():
                         for player in list(players_cards.keys()):
-                            if len(players_cards[player]) == 1 and player in players_whoare_uno:
-                                print('Player', player, 'is *UNO* during this turn.')
+                            if len(players_cards[player]) == 1 and player in self.players_whoare_uno:
+                                print('Player', player.upper(), 'is *UNO* during this turn.')
                             else:
                                 pass
-                    ####### FOOOOK OU FIN RANJE SA ######
+                            
+                    # Creating a function to break *UNO* when a player has to pick at least one card
+                    
+                    def breaking_uno(player):
+                        if len(players_cards[player]) > 1 and player in self.players_whoare_uno:
+                            find_index = self.players_whoare_uno.index(player)
+                            self.players_whoare_uno.pop(find_index)
+                            print('Player', player.upper(), 'is not longer *UNO*.\n')
+                        else:
+                            pass
                     
                     # Creating a function to trigger the action- play a card
                     
@@ -715,6 +732,7 @@ class MyUnoGame():
                         if card_played.startswith('W') and card_played == 'Wild Swap Hand':
                             print('Player', list(players_cards.keys())[num].upper(), 'has played: ', card_played, '\n')
                             swap_hands()
+                            calling_uno()
                             self.wild_color = set_wild_color(card_played)
                             print('The new displayed card is a: ', self.discard[-1], '\n')
                         elif card_played.startswith('W') and card_played == 'Wild Shuffle Hands':
@@ -759,6 +777,7 @@ class MyUnoGame():
                                     get_two_cards = list(random.sample(self.pile, 2))
                                     players_cards[players_least_cards[0]].append(get_two_cards[0])
                                     players_cards[players_least_cards[0]].append(get_two_cards[1])
+                                    breaking_uno(players_least_cards[0])
                                     self.pile.pop(self.pile.index(get_two_cards[0]))
                                     self.pile.pop(self.pile.index(get_two_cards[1]))
                                     print('Player', players_least_cards[0].upper(), 'has picked two more cards.\n')
@@ -782,6 +801,7 @@ class MyUnoGame():
                                     self.pile.pop(self.pile.index(get_two_cards[0]))
                                     self.pile.pop(self.pile.index(get_two_cards[1]))
                                     print('Player', closest_player.upper(), 'has picked two more cards.\n')
+                                    breaking_uno(closest_player)
                                     print('Player', list(players_cards.keys())[num].upper())
                                     input('Please type anything to end your turn: ')
                             elif self.wild_custom_rule == self.rule_three:
@@ -802,6 +822,8 @@ class MyUnoGame():
                                         self.pile.pop(self.pile.index(get_two_cards[1]))
                                 print('\nAll Players, except Player', list(players_cards.keys())[num].upper(),
                                       ', have picked 2 more cards.\n')
+                                for player in list(players_cards.keys()):
+                                    breaking_uno(player)
                                 print('Player', list(players_cards.keys())[num].upper())
                                 input('Please type anything to proceed: ')
                             self.wild_color = set_wild_color(card_played)
@@ -856,8 +878,8 @@ class MyUnoGame():
                     # Analyzing displayed discarded card and determining action for player
                     ## When there is a Draw Two displayed
                     if self.discard[-1].startswith('Draw Two'):
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if draw_two_skip == True:
                             draw_two_skip = False
                             option_chosen = test_validity_dt()
@@ -869,6 +891,7 @@ class MyUnoGame():
                                 self.pile.pop(self.pile.index(get_two_cards[0]))
                                 self.pile.pop(self.pile.index(get_two_cards[1]))
                                 print('\nPlayer', list(players_cards.keys())[num].upper(), 'has picked two more cards.\n')
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                         elif draw_two_skip == False:
@@ -878,6 +901,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -886,8 +910,8 @@ class MyUnoGame():
                                 
                     ## When there is a Skip displayed
                     elif self.discard[-1].startswith('Skip'):
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if skip_next_player == True:
                             skip_next_player = False
                             print('\nPlayer', list(players_cards.keys())[num].upper(), 'has been skipped.')
@@ -899,6 +923,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -907,14 +932,14 @@ class MyUnoGame():
                                 
                     ## When there is a Reverse displayed
                     elif self.discard[-1].startswith('Reverse'):
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         pass
                     
                     ## When there is a Wild displayed
                     elif self.discard[-1] == 'Wild':
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if first_is_wild:
                             print('The first card is a Wild.\n',
                                   'Please choose the color before you can start playing.\n')
@@ -925,6 +950,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -937,6 +963,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -944,8 +971,8 @@ class MyUnoGame():
                     
                     ## When there is a Wild Draw Four displayed
                     elif self.discard[-1] == 'Wild Draw Four':
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if draw_four_skip == True:
                             draw_four_skip = False
                             option_chosen = test_validity_wdf()
@@ -962,6 +989,7 @@ class MyUnoGame():
                                 self.pile.pop(self.pile.index(get_four_cards[3]))
                                 print('\nPlayer', list(players_cards.keys())[num].upper(),
                                       'has picked four more cards')
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             elif option_chosen == '000':
@@ -994,6 +1022,7 @@ class MyUnoGame():
                                         self.pile.pop(self.pile.index(get_four_cards[3]))
                                         print('\nPlayer', list(players_cards.keys())[quantity_players - 1].upper(),
                                               'has picked four more cards.\n')
+                                        breaking_uno(list(players_cards.keys())[quantity_players - 1])
                                         option_chosen = test_validity()
                                         play_acard()
                                     elif number_valid_move == 0:
@@ -1018,6 +1047,7 @@ class MyUnoGame():
                                         self.pile.pop(self.pile.index(get_six_cards[5]))
                                         print('\nPlayer', list(players_cards.keys())[num].upper(),
                                               'has picked six more cards.\n')
+                                        breaking_uno(list(players_cards.keys())[num])
                                 else:
                                     number_valid_move = 0
                                     for card in list(players_cards.values())[num-1]:
@@ -1043,6 +1073,7 @@ class MyUnoGame():
                                         self.pile.pop(self.pile.index(get_four_cards[3]))
                                         print('\nPlayer', list(players_cards.keys())[num-1].upper(),
                                               'has picked four more cards.\n')
+                                        breaking_uno(list(players_cards.keys())[num-1])
                                         option_chosen = test_validity()
                                         play_acard()
                                     elif number_valid_move == 0:
@@ -1067,6 +1098,7 @@ class MyUnoGame():
                                         self.pile.pop(self.pile.index(get_six_cards[5]))
                                         print('\nPlayer', list(players_cards.keys())[num].upper(),
                                               'has picked six more cards.\n')
+                                        breaking_uno(list(players_cards.keys())[num])
                         elif draw_four_skip == False:
                             option_chosen = test_validity()
                             if option_chosen == '888':
@@ -1074,6 +1106,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -1082,8 +1115,8 @@ class MyUnoGame():
                     
                     ## When there is a Wild Swap Hand displayed
                     elif self.discard[-1] == 'Wild Swap Hand':
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if first_is_wild:
                             print('The first card is a Wild Swap Hands. You can swap hand with one player',
                                   'and just choose a color.\nOr you can decide to not swap and choose the color only.\n')
@@ -1095,6 +1128,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -1107,6 +1141,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -1114,8 +1149,8 @@ class MyUnoGame():
                     
                     ## When there is a Wild Shuffle Hand
                     elif self.discard[-1] == 'Wild Shuffle Hands':
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if first_is_wild:
                             print('The first card is a Wild Shuffle Hands.\n',
                                   'Please choose the color before you can start playing.\n')
@@ -1126,6 +1161,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -1138,6 +1174,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                             elif option_chosen == '999':
                                 player_quit()
                             else:
@@ -1145,8 +1182,8 @@ class MyUnoGame():
                     
                     ## When there is a Wild Customizable
                     elif self.discard[-1] == 'Wild Customizable':
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         if first_is_wild:
                             print('The first card is a Wild Customizable.\n',
                                   'Please choose the color before you can start playing.\n')
@@ -1157,6 +1194,7 @@ class MyUnoGame():
                                 get_one_card = list(random.sample(self.pile, 1))
                                 players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                 self.pile.pop(self.pile.index(get_one_card[0]))
+                                breaking_uno(list(players_cards.keys())[num])
                                 wild_custom_on = False
                             elif option_chosen == '999':
                                 wild_custom_on = False
@@ -1187,6 +1225,7 @@ class MyUnoGame():
                                     get_one_card = list(random.sample(self.pile, 1))
                                     players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                     self.pile.pop(self.pile.index(get_one_card[0]))
+                                    breaking_uno(list(players_cards.keys())[num])
                                     wild_custom_on = False
                                 elif option_chosen == '999':
                                     wild_custom_on = False
@@ -1200,6 +1239,7 @@ class MyUnoGame():
                                     get_one_card = list(random.sample(self.pile, 1))
                                     players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                     self.pile.pop(self.pile.index(get_one_card[0]))
+                                    breaking_uno(list(players_cards.keys())[num])
                                     wild_custom_on = False
                                 elif option_chosen == '999':
                                     wild_custom_on = False
@@ -1213,6 +1253,7 @@ class MyUnoGame():
                                     get_one_card = list(random.sample(self.pile, 1))
                                     players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                     self.pile.pop(self.pile.index(get_one_card[0]))
+                                    breaking_uno(list(players_cards.keys())[num])
                                     wild_custom_on = False
                                 elif option_chosen == '999':
                                     wild_custom_on = False
@@ -1226,6 +1267,7 @@ class MyUnoGame():
                                     get_one_card = list(random.sample(self.pile, 1))
                                     players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                                     self.pile.pop(self.pile.index(get_one_card[0]))
+                                    breaking_uno(list(players_cards.keys())[num])
                                 elif option_chosen == '999':
                                     player_quit()
                                 else:
@@ -1234,14 +1276,15 @@ class MyUnoGame():
                     
                     ## When there is a normal card
                     elif self.discard[-1][0].isdigit():
-                        challenge_uno
-                        display_all_uno
+                        challenge_uno()
+                        display_all_uno()
                         option_chosen = test_validity()
                         if option_chosen == '888':
                             reshuffle_discarded()
                             get_one_card = list(random.sample(self.pile, 1))
                             players_cards[list(players_cards.keys())[num]].append(get_one_card[0])
                             self.pile.pop(self.pile.index(get_one_card[0]))
+                            breaking_uno(list(players_cards.keys())[num])
                         elif option_chosen == '999':
                             player_quit()
                         else:
@@ -1312,7 +1355,9 @@ class MyUnoGame():
 abc = MyUnoGame(3)
 abc.play('with_score', max_points=500)
 len(abc.pile)
-
+abc.recent_whomiss_uno
+abc.just_miss_uno
+abc.challenge_uno
 ['sasa' +
  'Papa']
 
@@ -1326,7 +1371,7 @@ z = {w[i]:x[i]
 
 aaa = list(z.keys())[1]
 aaa
-
+len([])
 type(aaa)
 z['w'].append(2)
 z.keys().index('w')
@@ -1363,7 +1408,8 @@ for a in w:
     x.pop(x.index(a))
 #######
 
-y = {'a':12, 'b':6, 'c':6}
+y = {'a':[12, 14], 'b':[6], 'c':[6]}
+len(y['a'])
 list(y.keys())[0]
 
 list(y.values()).index(min(y.values()))
